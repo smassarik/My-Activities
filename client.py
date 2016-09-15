@@ -21,10 +21,16 @@ import json
 import threading
 import numpy as np
 
+counter = 0
+sumX = 0
+sumY = 0
+sumZ = 0
+
 # TODO: Replace the string with your user ID
-user_id = "???"
+user_id = "b3.ba.e3.af.0b.b1.0b.bc.51.f1"
 
 def process(timestamp, values):
+    
     """
     Process incoming accelerometer data.
     
@@ -62,7 +68,19 @@ def process(timestamp, values):
     
     print("Received data")
     # TODO: Compute the average    
-    
+    #(t,[x,y,z])
+
+    global counter
+    counter = counter + 1
+    global sumX 
+    sumX = (sumX + values[0])/counter
+    global sumY
+    sumY = (sumY + values[1])/counter
+    global sumZ 
+    sumZ = (sumZ + values[2])/counter
+
+    print("X average: {}  Y average: {}  Z average: {}".format(sumX, sumY, sumZ))   
+   
     return
     
     
