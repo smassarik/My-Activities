@@ -143,6 +143,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
                     return;
                 }
                 // TODO : broadcast activity to UI
+//                broadcastAccelerometerReading(timestamp, sensorVals);
             }
         });
     }
@@ -222,7 +223,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
             //TODO: Send the accelerometer reading to the server
             Log.d(TAG, "X : " + event.values[0] + ", Y : " + event.values[1] + ", Z : " + event.values[2]);
             //TODO: broadcast the accelerometer reading to the UI
-
+            broadcastAccelerometerReading(timestamp_in_milliseconds, event.values);
         }else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
 
             // we received a step event detected by the built-in Android step detector (assignment 1)
