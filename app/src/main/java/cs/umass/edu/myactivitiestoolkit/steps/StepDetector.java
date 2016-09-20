@@ -67,7 +67,10 @@ public class StepDetector implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-
+            int min, max, avg;
+            long time = event.timestamp;
+            float[] values = event.values;
+            float rms = Math.sqrt((Math.pow(values.x,2) + Math.pow(values.y, 2) + Math.pow(values.z, 2)/3));
             //TODO: Detect steps! Call onStepDetected(...) when a step is detected.
 
         }

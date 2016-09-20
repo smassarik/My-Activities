@@ -160,6 +160,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
         mSensorManager.registerListener(this, mAccelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
         // generic or previous defined listener
         //TODO : (Assignment 1) Register your step detector. Register an OnStepListener to receive step events
+        mSensorManager.registerListener(mStepDetector, mAccelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     /**
