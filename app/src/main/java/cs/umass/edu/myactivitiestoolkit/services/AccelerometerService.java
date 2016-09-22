@@ -18,6 +18,7 @@ import java.util.Locale;
 import cs.umass.edu.myactivitiestoolkit.R;
 import cs.umass.edu.myactivitiestoolkit.constants.Constants;
 import cs.umass.edu.myactivitiestoolkit.steps.StepDetector;
+import cs.umass.edu.myactivitiestoolkit.processing.Filter;
 import edu.umass.cs.MHLClient.client.MessageReceiver;
 import edu.umass.cs.MHLClient.client.MobileIOClient;
 import edu.umass.cs.MHLClient.sensors.AccelerometerReading;
@@ -100,6 +101,8 @@ public class AccelerometerService extends SensorService implements SensorEventLi
 
     /** The step count as predicted by the Android built-in step detection algorithm. */
     private int mAndroidStepCount = 0;
+
+    private Filter mFilter = new Filter(3.0);
 
     public AccelerometerService(){
         mStepDetector = new StepDetector();
@@ -224,11 +227,12 @@ public class AccelerometerService extends SensorService implements SensorEventLi
             //TODO: Send the accelerometer reading to the server
 //            Log.d(TAG, "X : " + event.values[0] + ", Y : " + event.values[1] + ", Z : " + event.values[2]);
 
-            AccelerometerReading accelerometerReading = new AccelerometerReading(mUserID, "MOBILE", "", timestamp_in_milliseconds, event.values);
+            float[] filteredValues = mFilter.getFilteredValues(event.values);
+            AccelerometerReading accelerometerReading = new AccelerometerReading(mUserID, "MOBILE", "", timestamp_in_milliseconds, filteredValues);
             if(mClient.sendSensorReading(accelerometerReading)) Log.d(TAG, "SENSOR READING QUEUED");
 
             //TODO: broadcast the accelerometer reading to the UI
-            broadcastAccelerometerReading(timestamp_in_milliseconds, event.values);
+            broadcastAccelerometerReading(timestamp_in_milliseconds, filteredValues);
         }else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
 
             // we received a step event detected by the built-in Android step detector (assignment 1)

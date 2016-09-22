@@ -27,6 +27,8 @@ public class StepDetector implements SensorEventListener {
      */
     private int stepCount;
 
+    private Filter mFilter = new Filter(3.0);
+
     public StepDetector(){
         mStepListeners = new ArrayList<>();
         stepCount = 0;
@@ -65,14 +67,18 @@ public class StepDetector implements SensorEventListener {
      * @param event sensor reading
      */
     @Override
+    //TODO: Detect steps! Call onStepDetected(...) when a step is detected.
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             int min, max, avg;
             long time = event.timestamp;
             float[] values = event.values;
-            float rms = Math.sqrt((Math.pow(values.x,2) + Math.pow(values.y, 2) + Math.pow(values.z, 2)/3));
-            //TODO: Detect steps! Call onStepDetected(...) when a step is detected.
 
+            //extract 3d vector with root-mean-squared
+            double rms = Math.sqrt((Math.pow(values[0],2) + Math.pow(values[1], 2) + Math.pow(values[2], 2)/3));
+
+            //use low-pass filter to remove frequencies above 3hz
+            //detect step by counting changes in sign of derivative
         }
     }
 

@@ -18,21 +18,21 @@ public class Filter {
 	
 	private int SAMPLE_RATE = 30;
 	
-	private FilterType FILTER_TYPE = FilterType.SMOOTHING;
+	private FilterType FILTER_TYPE = FilterType.BUTTERWORTH;
 	
 	private int SMOOTH_FACTOR = 2;
 	
-	private double CUTOFF_FREQUENCY = 1.0;
-	
+	private double CUTOFF_FREQUENCY = 3.0;
+
 	private double ax[] = new double[3];
 	private double by[] = new double[3];
-	
+
 	private double xv[][] = null;
 	private double yv[][] = null;
-	
+
 	private double expectedValue[] =null;
 	private static final double INVALID = Double.NEGATIVE_INFINITY;
-	
+
 	private static final int NUM_ACCEL_FIELDS = 3;
 
 	/**
@@ -44,7 +44,7 @@ public class Filter {
 		SMOOTH_FACTOR = (smoothFactor>=1?smoothFactor:1);
 		expectedValue = new double[NUM_ACCEL_FIELDS];
 	}
-	
+
 	/**
 	 * Use this constructor to use a Butterworth filter.
 	 * @param cutoffFrequency the frequency threshold for smoothing.
@@ -56,18 +56,18 @@ public class Filter {
 		yv = new double[NUM_ACCEL_FIELDS][3];
 		getLPCoefficientsButterworth2Pole(SAMPLE_RATE, CUTOFF_FREQUENCY);
 	}
-	
-	
+
+
 	/**
 	 * Filters the current accelerometer reading.
 	 * @param values the accelerometer values along the x, y and z axes
 	 * @return the filtered accelerometer values.
 	 */
-	public double[] getFilteredValues(float... values) {
-		double result[] = new double[NUM_ACCEL_FIELDS];
+	public float[] getFilteredValues(float... values) {
+		float result[] = new float[NUM_ACCEL_FIELDS];
 		if(FILTER_TYPE == FilterType.BUTTERWORTH) {
 			for (int i = 0; i < values.length; i++){
-				result[i] = getButterworthFilteredValue(values[i], i);
+				result[i] = (float)getButterworthFilteredValue(values[i], i);
 			}
 //			result[X_INDEX] = getButterworthFilteredValue(values[0], X_INDEX);
 //			result[Y_INDEX] = getButterworthFilteredValue(values[1], Y_INDEX);
@@ -75,7 +75,7 @@ public class Filter {
 		}
 		else if(FILTER_TYPE == FilterType.SMOOTHING) {
 			for (int i = 0; i < values.length; i++){
-				result[i] = getSmoothedValue(values[i], i);
+				result[i] = (float)getSmoothedValue(values[i], i);
 			}
 //			result[X_INDEX] = getSmoothedValue(values[0], X_INDEX);
 //			result[Y_INDEX] = getSmoothedValue(values[1], Y_INDEX);
@@ -83,7 +83,7 @@ public class Filter {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Filter using butterworth filter
 	 * @param sample
@@ -101,7 +101,7 @@ public class Filter {
 
 		return yv[filterIndex][0];
 	}
-	
+
 	/**
 	 * Filter using Smoothing Filter
 	 * @param sample
@@ -118,7 +118,7 @@ public class Filter {
 			return expectedValue[filterIndex];
 		}
 	}
-	
+
 	/**
 	 * Get Butterworth 2 Pole LPC Coefficients
 	 * @param SAMPLE_RATE
