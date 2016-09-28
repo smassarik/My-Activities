@@ -20,8 +20,9 @@ import sys
 import json
 import threading
 import numpy as np
+import math
 
-# TODO: Replace the string with your user ID
+# TODO: Replace the string with your user ID: Done
 user_id = "b3.ba.e3.af.0b.b1.0b.bc.51.f1"
 
 count = 0
@@ -52,9 +53,22 @@ def detectSteps(timestamp, filteredValues):
     When a step has been detected, call the onStepDetected method, passing 
     in the timestamp.
     """
-    
     # TODO: Step detection algorithm
+    
+    
     return
+
+def rootMeanSq(x,y,z):
+    x = x*x
+    y =y*y
+    z = z*z
+    
+    v = [x,y,z]
+    s= np.sum(v)
+    sqrtMean = np.sqrt(s)
+    return s
+    
+    
     
     
 
