@@ -102,9 +102,7 @@ public class StepDetector implements SensorEventListener {
                 else newSlope = (maxAccel - minAccel)/(maxTime);
 
                 //check for change in sign
-                if(Math.abs(oldSlope) + Math.abs(newSlope) > Math.abs(oldSlope + newSlope)){
-                    onStepDetected(curTime, mbuffer);
-                }
+                if(Math.abs(oldSlope) + Math.abs(newSlope) > Math.abs(oldSlope + newSlope)) onStepDetected(curTime, mbuffer);
 
                 mbuffer = new float[50];
                 valueCount = 0;
