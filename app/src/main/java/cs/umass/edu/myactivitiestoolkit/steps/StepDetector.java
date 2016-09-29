@@ -31,6 +31,7 @@ public class StepDetector implements SensorEventListener {
     private Filter mFilter = new Filter(3.0);
     private float[] mbuffer = new float[50];
     private int valueCount = 0;
+    private float oldSlope = 0;
     private long[] timestamps = new long[50];
 
 
@@ -75,7 +76,7 @@ public class StepDetector implements SensorEventListener {
     //TODO: Detect steps! Call onStepDetected(...) when a step is detected.
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float minAccel, maxAccel, oldSlope, newSlope = 0;
+            float minAccel, maxAccel, newSlope = 0;
             long minTime = 0, maxTime = 0, curTime = event.timestamp;
             float[] filteredValues = mFilter.getFilteredValues(event.values);
             float vLength = (float)Math.sqrt((Math.pow(filteredValues[0],2) + Math.pow(filteredValues[1], 2) + Math.pow(filteredValues[2], 2)/3));
@@ -96,20 +97,18 @@ public class StepDetector implements SensorEventListener {
                     }
                 }
 
-                oldSlope = newSlope;
                 //determine which of the extrema occur later and calculate new slope
                 if(minTime > maxTime) newSlope = (minAccel - maxAccel)/(minTime - maxTime);
                 else newSlope = (maxAccel - minAccel)/(maxTime);
 
                 //check for change in sign
                 if(Math.abs(oldSlope) + Math.abs(newSlope) > Math.abs(oldSlope + newSlope)) onStepDetected(curTime, mbuffer);
+                oldSlope = newSlope;
 
                 mbuffer = new float[50];
                 valueCount = 0;
                 mbuffer[valueCount++] = vLength;
             }
-
-
         }
     }
 
