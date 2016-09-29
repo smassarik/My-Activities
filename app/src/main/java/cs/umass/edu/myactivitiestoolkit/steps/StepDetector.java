@@ -6,6 +6,7 @@ import android.hardware.SensorEventListener;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import cs.umass.edu.myactivitiestoolkit.processing.Filter;
 
@@ -28,6 +29,10 @@ public class StepDetector implements SensorEventListener {
     private int stepCount;
 
     private Filter mFilter = new Filter(3.0);
+    private float[] mbuffer = new float[50];
+    private int valueCount = 0;
+    private long[] timestamps = new long[50];
+
 
     public StepDetector(){
         mStepListeners = new ArrayList<>();
@@ -58,7 +63,7 @@ public class StepDetector implements SensorEventListener {
     }
 
     /**
-     * Here is where you will receive accelerometer readings, buffer them if necessary
+     * Here is where you will receive accelerometer readings, mbuffer them if necessary
      * and run your step detection algorithm. When a step is detected, call
      * {@link #onStepDetected(long, float[])} to notify all listeners.
      *
@@ -70,15 +75,43 @@ public class StepDetector implements SensorEventListener {
     //TODO: Detect steps! Call onStepDetected(...) when a step is detected.
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            int min, max, avg;
-            long time = event.timestamp;
-            float[] values = event.values;
+            float minAccel, maxAccel, oldSlope, newSlope = 0;
+            long minTime = 0, maxTime = 0, curTime = event.timestamp;
+            float[] filteredValues = mFilter.getFilteredValues(event.values);
+            float vLength = (float)Math.sqrt((Math.pow(filteredValues[0],2) + Math.pow(filteredValues[1], 2) + Math.pow(filteredValues[2], 2)/3));
 
-            //extract 3d vector with root-mean-squared
-            double rms = Math.sqrt((Math.pow(values[0],2) + Math.pow(values[1], 2) + Math.pow(values[2], 2)/3));
+            if(valueCount < 50){
+                timestamps[valueCount] = curTime;
+                mbuffer[valueCount++] = vLength;
+            }else{
+                minAccel = mbuffer[0];
+                maxAccel = mbuffer[0];
+                for(int i = 0; i < mbuffer.length; i++){
+                    if(mbuffer[i] > maxAccel){
+                        maxAccel = mbuffer[i];
+                        maxTime = timestamps[i];
+                    } else if(mbuffer[i] < minAccel){
+                        minAccel = mbuffer[i];
+                        minTime = timestamps[i];
+                    }
+                }
 
-            //use low-pass filter to remove frequencies above 3hz
-            //detect step by counting changes in sign of derivative
+                oldSlope = newSlope;
+                //determine which of the extrema occur later and calculate new slope
+                if(minTime > maxTime) newSlope = (minAccel - maxAccel)/(minTime - maxTime);
+                else newSlope = (maxAccel - minAccel)/(maxTime);
+
+                //check for change in sign
+                if(Math.abs(oldSlope) + Math.abs(newSlope) > Math.abs(oldSlope + newSlope)){
+                    onStepDetected(curTime, mbuffer);
+                }
+
+                mbuffer = new float[50];
+                valueCount = 0;
+                mbuffer[valueCount++] = vLength;
+            }
+
+
         }
     }
 
