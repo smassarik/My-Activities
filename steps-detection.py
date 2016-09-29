@@ -14,18 +14,22 @@ Refer to the assignment details at ... For a beginner's
 tutorial on coding in Python, see goo.gl/aZNg0q.
 
 """
-
+from __future__ import division
 import socket
 import sys
 import json
 import threading
 import numpy as np
-import math
+import math as Math
 
 # TODO: Replace the string with your user ID: Done
 user_id = "b3.ba.e3.af.0b.b1.0b.bc.51.f1"
 
 count = 0
+valueCount = 0
+oldSlope = 0
+mbuffer = []
+mtimestamp = []
 
 '''
     This socket is used to send data back through the data collection server.
@@ -54,21 +58,64 @@ def detectSteps(timestamp, filteredValues):
     in the timestamp.
     """
     # TODO: Step detection algorithm
+    global valueCount 
+    global mbuffer
+    global mtimestamp
+    global oldSlope
+    vLength = 0 
+    minAccel = 0 
+    maxAccel = 0 
+    newSlope = 0 
+    minTime = 0 
+    maxTime = 0 
+    curTime = timestamp
+    vLength = rootMeanSq(filteredValues)
     
-    
+    if valueCount < 50:
+        mtimestamp.append(curTime) 
+        mbuffer.append(vLength)
+        valueCount +=1
+    else:
+        minAccel = mbuffer[0] 
+        maxAccel = mbuffer[0] 
+        for i, j in enumerate(mbuffer):
+            if j > maxAccel:
+                maxAccel = j
+                maxTime = mtimestamp[i] 
+            elif j < minAccel:
+                minAccel = j 
+                minTime = mtimestamp[i] 
+                
+        if minTime > maxTime:
+            newSlope = (minAccel - maxAccel)/(minTime - maxTime) 
+            
+        else:
+            newSlope = (maxAccel - minAccel)/(maxTime) 
+            
+        
+        #check for change in sign
+        if (Math.fabs(oldSlope) + Math.fabs(newSlope)) > Math.fabs(oldSlope + newSlope):
+            onStepDetected(curTime) 
+            print oldSlope, newSlope
+        oldSlope = newSlope 
+        #determine which of the extrema occur later and calculate new slope
+        mbuffer = [] 
+        valueCount = 0
+        mbuffer.append(vLength)
+        valueCount +=1
     return
 
-def rootMeanSq(x,y,z):
-    x = x*x
-    y =y*y
-    z = z*z
-    
-    v = [x,y,z]
-    s= np.sum(v)
+def rootMeanSq(values):
+    values[0] = values[0]*values[0]
+    values[1] =values[1]*values[1]
+    values[2] = values[2]*values[2] 
+    s = np.sum(values)
     sqrtMean = np.sqrt(s)
-    return s
     
+    return sqrtMean
     
+ 
+        
     
     
 
