@@ -84,25 +84,38 @@ public class StepDetector implements SensorEventListener {
             if(valueCount < 50){
                 timestamps[valueCount] = curTime;
                 mbuffer[valueCount++] = vLength;
+                Log.d(TAG, "inside IF 1");
+
             }else{
+                Log.d(TAG, "inside else 1");
                 minAccel = mbuffer[0];
                 maxAccel = mbuffer[0];
                 for(int i = 0; i < mbuffer.length; i++){
+                    Log.d(TAG, "for loop: " + i);
                     if(mbuffer[i] > maxAccel){
                         maxAccel = mbuffer[i];
                         maxTime = timestamps[i];
+                        Log.d(TAG, "inside IF 2");
                     } else if(mbuffer[i] < minAccel){
                         minAccel = mbuffer[i];
                         minTime = timestamps[i];
+                        Log.d(TAG, "inside else 2");
                     }
                 }
 
                 //determine which of the extrema occur later and calculate new slope
-                if(minTime > maxTime) newSlope = (minAccel - maxAccel)/(minTime - maxTime);
-                else newSlope = (maxAccel - minAccel)/(maxTime);
+                //if(minTime > maxTime) newSlope = (minAccel - maxAccel)/(minTime - maxTime);
+                //else newSlope = (maxAccel - minAccel)/(maxTime);
+                newSlope = (maxAccel- minAccel)/(maxTime-minTime);
 
                 //check for change in sign
-                if(Math.abs(oldSlope) + Math.abs(newSlope) > Math.abs(oldSlope + newSlope)) onStepDetected(curTime, mbuffer);
+
+                float oldNew = Math.abs(oldSlope + newSlope);
+                //if (Math.abs(oldSlope)+Math.abs(newSlope) > oldNew){}
+                if((Math.abs(oldSlope) + Math.abs(newSlope) > oldNew)){
+                    onStepDetected(curTime, mbuffer);
+                    Log.d(TAG, "inside IF 3 step");
+                }
                 oldSlope = newSlope;
 
                 mbuffer = new float[50];

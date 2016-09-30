@@ -109,8 +109,8 @@ def rootMeanSq(values):
     values[0] = values[0]*values[0]
     values[1] =values[1]*values[1]
     values[2] = values[2]*values[2] 
-    s = np.sum(values)
-    sqrtMean = np.sqrt(s)/3
+    s = np.sum(values)/3
+    sqrtMean = np.sqrt(s)
     
     return sqrtMean
     
