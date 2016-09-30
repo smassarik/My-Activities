@@ -28,7 +28,7 @@ public class StepDetector implements SensorEventListener {
      */
     private int stepCount;
 
-    private Filter mFilter = new Filter(3.0);
+    private Filter mFilter = new Filter(1);
     private float[] mbuffer = new float[50];
     private int valueCount = 0;
     private float oldSlope = 0;
@@ -77,9 +77,9 @@ public class StepDetector implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             float minAccel, maxAccel, newSlope = 0;
-            long minTime = 0, maxTime = 0, curTime = event.timestamp;
+            long minTime = 0, maxTime = 0, curTime = event.timestamp/1000000;
             float[] filteredValues = mFilter.getFilteredValues(event.values);
-            float vLength = (float)Math.sqrt((Math.pow(filteredValues[0],2) + Math.pow(filteredValues[1], 2) + Math.pow(filteredValues[2], 2)/3));
+            float vLength = (float)Math.sqrt((Math.pow(filteredValues[0],2) + Math.pow(filteredValues[1], 2) + Math.pow(filteredValues[2], 2))/3);
 
             if(valueCount < 50){
                 timestamps[valueCount] = curTime;
