@@ -163,8 +163,10 @@ public class AccelerometerService extends SensorService implements SensorEventLi
 
         //TODO : (Assignment 0) Register the accelerometer sensor from the sensor manager.
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        mAccelerometerSensor =  mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(this, mAccelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        mStepSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        mSensorManager.registerListener(this, mStepSensor, SensorManager.SENSOR_DELAY_NORMAL);
         // generic or previous defined listener
         //TODO : (Assignment 1) Register your step detector. Register an OnStepListener to receive step events
         mSensorManager.registerListener(mStepDetector, mAccelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -180,6 +182,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
         mSensorManager.unregisterListener(this);
         mStepDetector.unregisterOnStepListener(this);
         mSensorManager.unregisterListener(mStepDetector);
+        mSensorManager.unregisterListener(mStepSensor);
     }
 
     @Override
@@ -241,7 +244,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
             //TODO: broadcast the accelerometer reading to the UI
             broadcastAccelerometerReading(timestamp_in_milliseconds, filteredValues);
         }else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-
+            Log.d(TAG, )
             // we received a step event detected by the built-in Android step detector (assignment 1)
             broadcastAndroidStepCount(mAndroidStepCount++);
 
