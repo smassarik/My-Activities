@@ -81,7 +81,7 @@ public class StepDetector implements SensorEventListener {
             float[] filteredValues = mFilter.getFilteredValues(event.values);
             float vLength = (float)Math.sqrt((Math.pow(filteredValues[0],2) + Math.pow(filteredValues[1], 2) + Math.pow(filteredValues[2], 2))/3);
 
-            if(valueCount < 50){
+            if(valueCount < 15){
                 timestamps[valueCount] = curTime;
                 mbuffer[valueCount++] = vLength;
                 Log.d(TAG, "inside IF 1");
@@ -112,13 +112,13 @@ public class StepDetector implements SensorEventListener {
 
                 float oldNew = Math.abs(oldSlope + newSlope);
                 //if (Math.abs(oldSlope)+Math.abs(newSlope) > oldNew){}
-                if((Math.abs(oldSlope) + Math.abs(newSlope) > oldNew)){
+                if((Math.abs(oldSlope) + Math.abs(newSlope) > oldNew)  &&  (maxAccel - minAccel) > 7){
                     onStepDetected(curTime, mbuffer);
                     Log.d(TAG, "inside IF 3 step");
                 }
                 oldSlope = newSlope;
 
-                mbuffer = new float[50];
+                mbuffer = new float[15];
                 valueCount = 0;
                 mbuffer[valueCount++] = vLength;
             }
