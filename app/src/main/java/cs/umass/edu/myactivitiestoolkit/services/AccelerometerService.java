@@ -123,7 +123,9 @@ public class AccelerometerService extends SensorService implements SensorEventLi
 
     @Override
     public void onConnected() {
+        Log.d(TAG, "accelerometerservice connected to server");
         super.onConnected();
+        Log.d(TAG, "accelerometerservice super.onConnected called");
         mClient.registerMessageReceiver(new MessageReceiver(Constants.MHLClientFilter.STEP_DETECTED) {
             @Override
             protected void onMessageReceived(JSONObject json) {
@@ -136,7 +138,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
                     e.printStackTrace();
                 }
                 broadcastServerStepCount(mServerStepCount++);
-            }
+                }
         });
         mClient.registerMessageReceiver(new MessageReceiver(Constants.MHLClientFilter.ACTIVITY_DETECTED) {
             @Override
@@ -244,7 +246,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
             //TODO: broadcast the accelerometer reading to the UI
             broadcastAccelerometerReading(timestamp_in_milliseconds, filteredValues);
         }else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-            Log.d(TAG, "in if");
+//            Log.d(TAG, "in if");
             // we received a step event detected by the built-in Android step detector (assignment 1)
             broadcastAndroidStepCount(mAndroidStepCount++);
 
@@ -303,11 +305,13 @@ public class AccelerometerService extends SensorService implements SensorEventLi
      * to other application components, e.g. the main UI.
      */
     public void broadcastLocalStepCount(int stepCount) {
+        Log.d(TAG, "Broadcasting local stepcount: "+mLocalStepCount);
         Intent intent = new Intent();
         intent.putExtra(Constants.KEY.STEP_COUNT, stepCount);
         intent.setAction(Constants.ACTION.BROADCAST_LOCAL_STEP_COUNT);
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(intent);
+        Log.d(TAG, "Intent broadcasted, local stepcount: "+mLocalStepCount);
     }
 
     public void broadcastServerStepCount(int stepCount) {
@@ -316,6 +320,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
         intent.setAction(Constants.ACTION.BROADCAST_SERVER_STEP_COUNT);
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(intent);
+        Log.d(TAG, "Intent broadcasted, server stepcount: "+mServerStepCount);
     }
 
 

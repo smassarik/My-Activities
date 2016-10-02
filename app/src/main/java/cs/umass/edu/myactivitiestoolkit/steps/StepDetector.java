@@ -84,22 +84,22 @@ public class StepDetector implements SensorEventListener {
             if(valueCount < 15){
                 timestamps[valueCount] = curTime;
                 mbuffer[valueCount++] = vLength;
-                Log.d(TAG, "inside IF 1");
+//                Log.d(TAG, "inside IF 1");
 
             }else{
-                Log.d(TAG, "inside else 1");
+//                Log.d(TAG, "inside else 1");
                 minAccel = mbuffer[0];
                 maxAccel = mbuffer[0];
                 for(int i = 0; i < mbuffer.length; i++){
-                    Log.d(TAG, "for loop: " + i);
+//                    Log.d(TAG, "for loop: " + i);
                     if(mbuffer[i] > maxAccel){
                         maxAccel = mbuffer[i];
                         maxTime = timestamps[i];
-                        Log.d(TAG, "inside IF 2");
+//                        Log.d(TAG, "inside IF 2");
                     } else if(mbuffer[i] < minAccel){
                         minAccel = mbuffer[i];
                         minTime = timestamps[i];
-                        Log.d(TAG, "inside else 2");
+//                        Log.d(TAG, "inside else 2");
                     }
                 }
 
@@ -114,7 +114,7 @@ public class StepDetector implements SensorEventListener {
                 //if (Math.abs(oldSlope)+Math.abs(newSlope) > oldNew){}
                 if((Math.abs(oldSlope) + Math.abs(newSlope) > oldNew)  &&  (maxAccel - minAccel) > 7){
                     onStepDetected(curTime, mbuffer);
-                    Log.d(TAG, "inside IF 3 step");
+//                    Log.d(TAG, "inside IF 3 step");
                 }
                 oldSlope = newSlope;
 

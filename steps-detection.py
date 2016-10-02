@@ -71,6 +71,7 @@ def detectSteps(timestamp, filteredValues):
     curTime = timestamp
     vLength = rootMeanSq(filteredValues)
     
+
     if valueCount < 15:
         mtimestamp.append(curTime) 
         mbuffer.append(vLength)
@@ -95,7 +96,7 @@ def detectSteps(timestamp, filteredValues):
         
         #check for change in sign
         if ((Math.fabs(oldSlope) + Math.fabs(newSlope)) > Math.fabs(oldSlope + newSlope) and (maxAccel - minAccel) > 7):
-            onStepDetected(curTime) 
+            onStepDetected(curTime)
             print oldSlope, newSlope
         oldSlope = newSlope 
         #determine which of the extrema occur later and calculate new slope
