@@ -136,35 +136,50 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     row0 = sumRow(conf, 0, 2)
     row1 = sumRow(conf, 1, 2)
     row2 = sumRow(conf, 2, 2)
-    
+    precise0 = 0.0
+    precise1 = 0.0
+    precise2 = 0.0
+    recall0 = 0.0
+    recall1 = 0.0
+    recall2 = 0.0
     accuracy = (conf.item((0,0)) + conf.item((1,1)) + conf.item((2,2))) / 30.0
     print "Accuracy is: " + str(accuracy)
     print("\n")
-    recall = conf.item((0,0)) / (conf.item((0,0) + conf.item((0,0))
-    if conf.item((0,0)) == 0 and (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0) == 0:
-        print "Precision walking is: 100"
-        print("\n")
-    elif conf.item((0,0)) == 0 and (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0) != 0:
-        print "Precision walking is: 0/" + str((conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0))
+    #recall = conf.item((0,0)) / (conf.item((0,0)) + conf.item((0,0)))
+    if conf.item((0,0)) == 0 and col0 == 0:
+      print "Precision walking is: NaN"
+      print("\n")
+    elif conf.item((0,0)) == 0 and col0 != 0:
+        print "Precision walking is:" + str(precise0) 
         print("\n")
     else:
-         precise0 = conf.item((0,0)) / (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0)
-         print "Precision walking is: " + str(precise0)
+        precise0 = conf.item((0,0)) / float(col0)
+        print "Precision walking is: " + str(precise0)
+        print("\n")
+    if conf.item((1,1)) == 0 and col1 != 0:
+        print "Precision running is:" + str(precise1)
+        print("\n")
+    elif conf.item((1,1)) == 0 and col1 == 0:
+      print "Precision running is: NaN"
+      print("\n")    
+    else:
+         precise1 = conf.item((1,1)) / float(col1)
+         print "Precision running is: " + str(precise1)
          print("\n")
-    if conf.item((1,0)) == 0:
-         print "Precision running is: N/A"
-         print("\n")
-    if conf.item((2,0)) == 0:
-         print "Precision running is: N/A"
+    if conf.item((2,2)) == 0 and col2 == 0:
+      print "Precision biking is: NaN"
+      print("\n")
+    elif conf.item((2,2)) == 0 and col2 != 0:
+        print "Precision biking is:" + str(precise2)
+        print("\n")
+    else:
+         precise2 = conf.item((2,2)) / float(col2)
+         print "Precision biking is: " + str(precise2)
          print("\n")
     
-    precise1 = conf.item((1,0)) / (conf.item((1,0)) + conf.item((1,1)) + conf.item((1,2)) + 0.0)
-    precise2 = conf.item((2,0)) / (conf.item((2,0)) + conf.item((2,1)) + conf.item((2,2))+ 0.0)
+    #precise1 = conf.item((1,0)) / (conf.item((1,0)) + conf.item((1,1)) + conf.item((1,2)) + 0.0)
+    #precise2 = conf.item((2,0)) / (conf.item((2,0)) + conf.item((2,1)) + conf.item((2,2))+ 0.0)
    
-   
-   
-    print "Precision biking is: " +  str(precise2)
-    print("\n")
     
    
     
