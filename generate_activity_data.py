@@ -38,6 +38,7 @@ from sklearn import svm
 from sklearn.metrics import confusion_matrix
 from sklearn import cross_validation
 
+
 # %%---------------------------------------------------------------------------
 #
 #		                      Initialization
@@ -82,7 +83,19 @@ for index, (activity, values) in enumerate(stats.items()):
 #		          Train Support Vector Machine Classifier
 #
 # -----------------------------------------------------------------------------
+def sumCol(conf,row,col):
+    res = 0
+    while row >-1:        
+        res = res + conf.item((row, col))
+        row -= 1
+    return res
 
+def sumRow(conf,row,col):
+    res = 0
+    while col >-1:        
+        res = res + conf.item((row, col))
+        col -= 1
+    return res
 
 n = len(y)
 
@@ -112,7 +125,16 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     print("Fold {} : The confusion matrix is :".format(i))
     print conf
     
+    
+    
     # TODO: Compute the accuracy, precision and recall from the confusion matrix
+    col0 = sumCol(conf, 2, 0)
+    col1 = sumCol(conf, 2, 1)
+    col2 = sumCol(conf, 2, 2)
+    row0 = sumRow(conf, 0, 2)
+    row1 = sumRow(conf, 1, 2)
+    row2 = sumRow(conf, 2, 2)
+    
     accuracy = (conf.item((0,0)) + conf.item((1,1)) + conf.item((2,2))) / 30.0
     print "Accuracy is: " + str(accuracy)
     print("\n")
@@ -141,6 +163,9 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
    
     print "Precision biking is: " +  str(precise2)
     print("\n")
+    
+   
+    
 
 # TODO: Output the average accuracy, precision and recall over the 10 folds 
 
