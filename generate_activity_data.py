@@ -83,6 +83,7 @@ for index, (activity, values) in enumerate(stats.items()):
 #
 # -----------------------------------------------------------------------------
 
+
 n = len(y)
 
 # SVM regularization parameter : For the purpose of this assignment, we will 
@@ -113,15 +114,31 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     
     # TODO: Compute the accuracy, precision and recall from the confusion matrix
     accuracy = (conf.item((0,0)) + conf.item((1,1)) + conf.item((2,2))) / 30.0
-    precise0 = conf.item((0,0)) / (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0)
-    precise1 = conf.item((1,0)) / (conf.item((1,0)) + conf.item((1,1)) + conf.item((1,2)) + 0.0)
-    precise2 = conf.item((2,0)) / (conf.item((2,0)) + conf.item((2,1)) + conf.item((2,2))+ 0.0)
     print "Accuracy is: " + str(accuracy)
     print("\n")
-    print "Precision walking is: " + str(precise0)
-    print("\n")
-    print "Precision running is: " +  str(precise1)
-    print("\n")
+    recall = conf.item((0,0)) / (conf.item((0,0) + conf.item((0,0))
+    if conf.item((0,0)) == 0 and (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0) == 0:
+        print "Precision walking is: 100"
+        print("\n")
+    elif conf.item((0,0)) == 0 and (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0) != 0:
+        print "Precision walking is: 0/" + str((conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0))
+        print("\n")
+    else:
+         precise0 = conf.item((0,0)) / (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0)
+         print "Precision walking is: " + str(precise0)
+         print("\n")
+    if conf.item((1,0)) == 0:
+         print "Precision running is: N/A"
+         print("\n")
+    if conf.item((2,0)) == 0:
+         print "Precision running is: N/A"
+         print("\n")
+    
+    precise1 = conf.item((1,0)) / (conf.item((1,0)) + conf.item((1,1)) + conf.item((1,2)) + 0.0)
+    precise2 = conf.item((2,0)) / (conf.item((2,0)) + conf.item((2,1)) + conf.item((2,2))+ 0.0)
+   
+   
+   
     print "Precision biking is: " +  str(precise2)
     print("\n")
 
