@@ -112,7 +112,17 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     print conf
     
     # TODO: Compute the accuracy, precision and recall from the confusion matrix
-    
+    accuracy = (conf.item((0,0)) + conf.item((1,1)) + conf.item((2,2))) / 30.0
+    precise0 = conf.item((0,0)) / (conf.item((0,0)) + conf.item((0,1)) + conf.item((0,2)) + 0.0)
+    precise1 = conf.item((1,0)) / (conf.item((1,0)) + conf.item((1,1)) + conf.item((1,2)) + 0.0)
+    precise2 = conf.item((2,0)) / (conf.item((2,0)) + conf.item((2,1)) + conf.item((2,2))+ 0.0)
+    print "Accuracy is: " + str(accuracy)
+    print("\n")
+    print "Precision walking is: " + str(precise0)
+    print("\n")
+    print "Precision running is: " +  str(precise1)
+    print("\n")
+    print "Precision biking is: " +  str(precise2)
     print("\n")
 
 # TODO: Output the average accuracy, precision and recall over the 10 folds 
