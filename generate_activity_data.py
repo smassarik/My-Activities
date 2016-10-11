@@ -83,6 +83,7 @@ for index, (activity, values) in enumerate(stats.items()):
 #		          Train Support Vector Machine Classifier
 #
 # -----------------------------------------------------------------------------
+#row is num of rows, col is specific collumn
 def sumCol(conf,row,col):
     res = 0
     while row >-1:        
@@ -90,6 +91,7 @@ def sumCol(conf,row,col):
         row -= 1
     return res
 
+#row specific row, col is number of collumns
 def sumRow(conf,row,col):
     res = 0
     while col >-1:        
