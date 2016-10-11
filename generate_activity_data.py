@@ -176,13 +176,41 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
          precise2 = conf.item((2,2)) / float(col2)
          print "Precision biking is: " + str(precise2)
          print("\n")
+         
+         
+         
+    if conf.item((0,0)) == 0 and row0 == 0:
+      print "Recall walking is: NaN"
+      print("\n")
+    elif conf.item((0,0)) == 0 and row0 != 0:
+        print "Recall walking is:" + str(recall0) 
+        print("\n")
+    else:
+        recall0 = conf.item((0,0)) / float(row0)
+        print "Recall walking is: " + str(recall0)
+        print("\n")
+    if conf.item((1,1)) == 0 and row1 != 0:
+        print "Recall running is:" + str(recall1)
+        print("\n")
+    elif conf.item((1,1)) == 0 and row1 == 0:
+      print "Recall running is: NaN"
+      print("\n")    
+    else:
+         recall1 = conf.item((1,1)) / float(row1)
+         print "Recall running is: " + str(recall1)
+         print("\n")
+    if conf.item((2,2)) == 0 and row2 == 0:
+      print "Recall biking is: NaN"
+      print("\n")
+    elif conf.item((2,2)) == 0 and row2 != 0:
+        print "Recall biking is:" + str(recall2)
+        print("\n")
+    else:
+         precise2 = conf.item((2,2)) / float(row2)
+         print "Recall biking is: " + str(recall2)
+         print("\n")
     
-    #precise1 = conf.item((1,0)) / (conf.item((1,0)) + conf.item((1,1)) + conf.item((1,2)) + 0.0)
-    #precise2 = conf.item((2,0)) / (conf.item((2,0)) + conf.item((2,1)) + conf.item((2,2))+ 0.0)
-   
-    
-   
-    
+
 
 # TODO: Output the average accuracy, precision and recall over the 10 folds 
 
