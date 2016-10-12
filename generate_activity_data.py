@@ -109,7 +109,7 @@ C = 1.0
 
 clf = svm.SVC(kernel = 'linear', C=C )
 
-cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
+cv = cross_validation.KFold(n, n_folds=10, shuffle=True, random_state=None)
 
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
