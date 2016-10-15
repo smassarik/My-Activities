@@ -100,7 +100,7 @@ for i,window_with_timestamp_and_label in slidingWindow(data, window_size, step_s
     X = np.append(X, np.reshape(x, (1,-1)), axis=0)
     # append label:
     y = np.append(y, window_with_timestamp_and_label[10, -1])
-    print str(y)
+    #print str(y)
     
 print("Finished feature extraction over {} windows".format(len(X)))
 print("Unique labels found: {}".format(set(y)))

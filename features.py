@@ -17,59 +17,49 @@ it is still publicly accessible).
 import numpy as np
 
 magnitude = []
-
+x_axis = []
+y_axis = []
+z_axis = []
+rms = 0
 def _compute_magnitude(window):
-    global magnitude    
+    global magnitude
+    global x_axis
+    global y_axis
+    global z_axis
+    global rms    
     magnitudex = 0
     magnitudey = 0
     magnitudez = 0
     for [x,y,z] in window:
+        x_axis.append(x)
+        y_axis.append(y)
+        z_axis.append(z)
+        rms += (x**2 + y**2 + z**2)/3
         magnitudex += x**2
         magnitudey += y**2
         magnitudez += z**2
         magnitude.append((magnitudex + magnitudey + magnitudez)**.5)
     return
     
-def _compute_std_x(window):
-    std_x = []
-    for [x,y,z] in window:
-        std_x.append(x)
-    return np.std(std_x)
+def _compute_std_x():
+    return np.std(x_axis)
 
-def _compute_std_y(window):
-    std_y = []
-    for [x,y,z] in window:
-        std_y.append(y)
-    return np.std(std_y)
+def _compute_std_y():
+    return np.std(y_axis)
     
-def _compute_std_z(window):
-    std_z = []
-    for [x,y,z] in window:
-        std_z.append(z)
-    return np.std(std_z)
+def _compute_std_z():
+    return np.std(z_axis)
 
-def _compute_median_x(window):
-    median_x = []
-    for [x,y,z] in window:
-        median_x.append(x)
-    return np.median(median_x)
+def _compute_median_x():
+    return np.median(x_axis)
 
-def _compute_median_y(window):
-    median_y = []
-    for [x,y,z] in window:
-        median_y.append(y)
-    return np.median(median_y)
+def _compute_median_y():
+    return np.median(y_axis)
 
-def _compute_median_z(window):
-    median_z = []
-    for [x,y,z] in window:
-        median_z.append(z)
-    return np.median(median_z)
+def _compute_median_z():
+    return np.median(z_axis)
     
 def _compute_rms(window):
-    rms = 0
-    for [x,y,z] in window:
-        rms += (x**2 + y**2 + z**2)/3
     return [((rms)**.5)/len(window)]
     
 def _compute_mean_features(window):
@@ -83,7 +73,7 @@ def _compute_mean_magnitude(window):
     return sum(magnitude)/len(window)
     
 def _compute_median_magnitude():
-    return np.sort(magnitude)[len(magnitude)/2 - 1]
+    return np.median(magnitude)
 
 def _compute_std_magnitude():
     return np.std(magnitude)
@@ -113,19 +103,19 @@ def extract_features(window):
     x = np.append(x, _compute_mean_features(window))
     #print "x " + str(x)
     #print '1'
-    x = np.append(x, _compute_std_x(window))
+    x = np.append(x, _compute_std_x())
     #print '2'    
-    x = np.append(x, _compute_std_y(window))
+    x = np.append(x, _compute_std_y())
     #print '3'
-    x = np.append(x, _compute_std_z(window))
+    x = np.append(x, _compute_std_z())
     #print '4'
     x = np.append(x, _compute_rms(window))
     #print '5'
-    x = np.append(x, _compute_median_x(window))
+    x = np.append(x, _compute_median_x())
     #print '6'
-    x = np.append(x, _compute_median_y(window))
+    x = np.append(x, _compute_median_y())
     #print '7'
-    x = np.append(x, _compute_median_z(window))
+    x = np.append(x, _compute_median_z())
     #print '8'
     x = np.append(x, _compute_mean_magnitude(window))
     #print '9'
