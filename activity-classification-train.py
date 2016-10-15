@@ -72,7 +72,7 @@ data = np.append(reoriented_data_with_timestamps, data[:,-1:], axis=1)
 # -----------------------------------------------------------------------------
 
 # you may want to play around with the window and step sizes
-window_size = 20
+window_size = 50
 step_size = 20
 
 # sampling rate for the sample data should be about 25 Hz; take a brief window to confirm this
@@ -80,7 +80,7 @@ n_samples = 1000
 time_elapsed_seconds = (data[n_samples,0] - data[0,0]) / 1000
 sampling_rate = n_samples / time_elapsed_seconds
 
-feature_names = ["mean X", "mean Y", "mean Z", "magnitude", "root mean squared"]
+feature_names = ["mean X", "mean Y", "mean Z", "std X", "std Y", "std Z", "root mean square", "median x", "median y", "median z", "mean magnitude", "median magnitude", "std magnitude", "minimum", "maximum"]
 class_names = ["Stationary", "Walking"]
 
 print("Extracting features and labels for window size {} and step size {}...".format(window_size, step_size))
@@ -100,6 +100,7 @@ for i,window_with_timestamp_and_label in slidingWindow(data, window_size, step_s
     X = np.append(X, np.reshape(x, (1,-1)), axis=0)
     # append label:
     y = np.append(y, window_with_timestamp_and_label[10, -1])
+    print str(y)
     
 print("Finished feature extraction over {} windows".format(len(X)))
 print("Unique labels found: {}".format(set(y)))
