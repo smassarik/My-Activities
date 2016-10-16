@@ -35,6 +35,7 @@ from features import extract_features # make sure features.py is in the same dir
 from util import slidingWindow, reorient, reset_vars
 from sklearn import cross_validation
 from sklearn.metrics import confusion_matrix, precision_score, accuracy_score, recall_score
+from sklearn.neighbors import KNeighborsClassifier
 import pickle
 
 
@@ -135,14 +136,11 @@ n_classes = len(class_names)
 # TODO: Train and evaluate your decision tree classifier over 10-fold CV.
 # Report average accuracy, precision and recall metrics.
 
-"""
-tree.fit(X, y)
-y_pred = tree.predict(X)
-conf = confusion_matrix(y, y_pred)
-accuracy = tree.score(X, y)"""
-
 cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
 tree = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+dtavgacc = 0.0
+dtavgprecision = 0.0
+dtavgrecall = 0.0
 
 for i, (train_indexes, test_indexes) in enumerate(cv):
     X_train = X[train_indexes, :]
@@ -152,17 +150,41 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     tree.fit(X_train, y_train)
 
     y_pred = tree.predict(X_test)
-    conf = confusion_matrix(y_test, y_pred)
-    accuracy1 = tree.score(X_test, y_test)
-    accuracy2 = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
+    conf = confusion_matrix(y_test, y_pred, labels=[0,1,2])
+    dtaccuracy1 = tree.score(X_test, y_test)
+    dtprecision = precision_score(y_test, y_pred)
+    dtrecall = recall_score(y_test, y_pred)
     
-    print("Fold {}".format(i))
-    
+    print("Fold {} decision tree accuracy1 {}, precision {}, recall {}".format(i, dtaccuracy1, dtprecision, dtrecall))
+print("Decision tree average accuracy {} precision {} recall {}".format(dtavgacc/10, dtavgprecision/10, dtavgrecall/10))
+print ''
 export_graphviz(tree, out_file="tree.dot", feature_names = feature_names)
     
 # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
+
+cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
+knn = KNeighborsClassifier()
+knnavgacc = 0.0
+knnavgprecision = 0.0
+knnavgrecall = 0.0
+
+for i, (train_indexes, test_indexes) in enumerate(cv):
+    X_train = X[train_indexes, :]
+    y_train = y[train_indexes]
+    X_test = X[test_indexes, :]
+    y_test = y[test_indexes]
+    knn.fit(X_train, y_train)
+
+    y_pred = knn.predict(X_test)
+    conf = confusion_matrix(y_test, y_pred, labels=[0,1,2])
+    knnaccuracy1 = knn.score(X_test, y_test)
+    knnprecision = precision_score(y_test, y_pred)
+    knnrecall = recall_score(y_test, y_pred)
+    
+    print("Fold {} k-nearest neighbors accuracy1 {}, precision {}, recall {}".format(i, knnaccuracy1, knnprecision, knnrecall))
+print("K-nearest neighbors average accuracy {} precision {} recall {}".format(knnavgacc/10, knnavgprecision/10, knnavgrecall/10))
+
+
     
 # TODO: Once you have collected data, train your best model on the entire 
 # dataset. Then save it to disk as follows:
