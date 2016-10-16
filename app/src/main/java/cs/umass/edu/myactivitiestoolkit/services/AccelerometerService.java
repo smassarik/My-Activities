@@ -102,6 +102,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
     private int mLocalStepCount = 0;
     private int mServerStepCount = 0;
 
+
     /** The step count as predicted by the Android built-in step detection algorithm. */
     private int mAndroidStepCount = 0;
 
@@ -240,7 +241,8 @@ public class AccelerometerService extends SensorService implements SensorEventLi
 //            Log.d(TAG, "X : " + event.values[0] + ", Y : " + event.values[1] + ", Z : " + event.values[2]);
 
             float[] filteredValues = mFilter.getFilteredValues(event.values);
-            AccelerometerReading accelerometerReading = new AccelerometerReading(mUserID, "MOBILE", "", timestamp_in_milliseconds, filteredValues);
+//          labels = ["walking", "sitting", "running", "jumping", "biking", "jogging"]
+            AccelerometerReading accelerometerReading = new AccelerometerReading(mUserID, "MOBILE", "", timestamp_in_milliseconds, 0, filteredValues);
             mClient.sendSensorReading(accelerometerReading);
 
             //TODO: broadcast the accelerometer reading to the UI
