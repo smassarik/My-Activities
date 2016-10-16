@@ -72,8 +72,8 @@ data = np.append(reoriented_data_with_timestamps, data[:,-1:], axis=1)
 # -----------------------------------------------------------------------------
 
 # you may want to play around with the window and step sizes
-window_size = 50
-step_size = 20
+window_size = 1000
+step_size = 1000
 
 # sampling rate for the sample data should be about 25 Hz; take a brief window to confirm this
 n_samples = 1000
@@ -100,7 +100,6 @@ for i,window_with_timestamp_and_label in slidingWindow(data, window_size, step_s
     X = np.append(X, np.reshape(x, (1,-1)), axis=0)
     # append label:
     y = np.append(y, window_with_timestamp_and_label[10, -1])
-    #print str(y)
     
 print("Finished feature extraction over {} windows".format(len(X)))
 print("Unique labels found: {}".format(set(y)))
@@ -120,7 +119,7 @@ sys.stdout.flush()
 plt.figure()
 formats = ['bo', 'go']
 for i in range(0,len(y),10): # only plot 1/10th of the points, it's a lot of data!
-    plt.plot(X[i,0], X[i,1], formats[int(y[i])])
+    plt.plot(X[i,14], X[i,10], formats[int(y[i])])
     
 plt.show()
 
@@ -135,6 +134,12 @@ n_classes = len(class_names)
 
 # TODO: Train and evaluate your decision tree classifier over 10-fold CV.
 # Report average accuracy, precision and recall metrics.
+
+tree = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+tree.fit(X, y)
+y_pred = tree.predict(X)
+conf = confusion_matrix(y, y_pred)
+accuracy = tree.score(X, y)
 
 cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
 
