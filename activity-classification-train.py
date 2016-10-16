@@ -34,7 +34,7 @@ from sklearn import svm
 from features import extract_features # make sure features.py is in the same directory
 from util import slidingWindow, reorient, reset_vars
 from sklearn import cross_validation
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_score, accuracy_score, recall_score
 import pickle
 
 
@@ -135,16 +135,32 @@ n_classes = len(class_names)
 # TODO: Train and evaluate your decision tree classifier over 10-fold CV.
 # Report average accuracy, precision and recall metrics.
 
-tree = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+"""
 tree.fit(X, y)
 y_pred = tree.predict(X)
 conf = confusion_matrix(y, y_pred)
-accuracy = tree.score(X, y)
+accuracy = tree.score(X, y)"""
 
 cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
+tree = DecisionTreeClassifier(criterion="entropy", max_depth=3)
 
 for i, (train_indexes, test_indexes) in enumerate(cv):
+    X_train = X[train_indexes, :]
+    y_train = y[train_indexes]
+    X_test = X[test_indexes, :]
+    y_test = y[test_indexes]
+    tree.fit(X_train, y_train)
+
+    y_pred = tree.predict(X_test)
+    conf = confusion_matrix(y_test, y_pred)
+    accuracy1 = tree.score(X_test, y_test)
+    accuracy2 = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    
     print("Fold {}".format(i))
+    
+export_graphviz(tree, out_file="tree.dot", feature_names = feature_names)
     
 # TODO: Evaluate another classifier, i.e. SVM, Logistic Regression, k-NN, etc.
     

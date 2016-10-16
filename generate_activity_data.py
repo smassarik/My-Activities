@@ -143,6 +143,7 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     recall1 = 0.0
     recall2 = 0.0
     accuracy = (conf.item((0,0)) + conf.item((1,1)) + conf.item((2,2))) / 30.0
+ #   accuracy = clf.score(X,y)
     print "Accuracy is: " + str(accuracy)
     print("\n")
     #recall = conf.item((0,0)) / (conf.item((0,0)) + conf.item((0,0)))
