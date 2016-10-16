@@ -154,6 +154,9 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     dtaccuracy1 = tree.score(X_test, y_test)
     dtprecision = precision_score(y_test, y_pred)
     dtrecall = recall_score(y_test, y_pred)
+    dtavgacc += dtaccuracy1
+    dtavgprecision += dtprecision
+    dtavgrecall += dtrecall
     
     print("Fold {} decision tree accuracy1 {}, precision {}, recall {}".format(i, dtaccuracy1, dtprecision, dtrecall))
 print("Decision tree average accuracy {} precision {} recall {}".format(dtavgacc/10, dtavgprecision/10, dtavgrecall/10))
@@ -180,6 +183,9 @@ for i, (train_indexes, test_indexes) in enumerate(cv):
     knnaccuracy1 = knn.score(X_test, y_test)
     knnprecision = precision_score(y_test, y_pred)
     knnrecall = recall_score(y_test, y_pred)
+    knnavgacc += knnaccuracy1
+    knnavgprecision += knnprecision
+    knnavgrecall += knnrecall
     
     print("Fold {} k-nearest neighbors accuracy1 {}, precision {}, recall {}".format(i, knnaccuracy1, knnprecision, knnrecall))
 print("K-nearest neighbors average accuracy {} precision {} recall {}".format(knnavgacc/10, knnavgprecision/10, knnavgrecall/10))
