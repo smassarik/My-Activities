@@ -17,7 +17,7 @@ import json
 import numpy as np
 
 # TODO: Replace the string with your user ID
-user_id = ""
+user_id = "b3.ba.e3.af.0b.b1.0b.bc.51.f1"
 
 count = 0
 
