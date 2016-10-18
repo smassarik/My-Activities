@@ -21,6 +21,8 @@ x_axis = []
 y_axis = []
 z_axis = []
 rms = 0
+t = np.arange(256)
+s = np.sin(t)
 def _compute_magnitude(window):
     global magnitude
     global x_axis
@@ -78,9 +80,29 @@ def _compute_median_magnitude():
 def _compute_std_magnitude():
     return np.std(magnitude)
 
-#def _compute_rfft(window):
-#    return np.fft.rfft(window).astype(float)[:2]
-
+def _compute_rfft_x():
+    global x_axis
+    n_freq = 8
+    sp =np.fft.fft(x_axis,n=n_freq)
+    freq = np.fft.fftfreq(n_freq)
+    print sp.real.argmax()
+    return freq[sp.real.argmax()]
+    
+def _compute_rfft_y():
+    global x_axis
+    n_freq = 8
+    sp =np.fft.fft(y_axis,n=n_freq)
+    freq = np.fft.fftfreq(n_freq)
+    print sp.real.argmax()
+    return freq[sp.real.argmax()]
+def _compute_rfft_z():
+    global x_axis
+    n_freq = 8
+    sp =np.fft.fft(z_axis,n=n_freq)
+    freq = np.fft.fftfreq(n_freq)
+    print sp.real.argmax()
+    return freq[sp.real.argmax()]
+    
 def _compute_min():
     return np.amin(magnitude)
     
@@ -128,8 +150,8 @@ def extract_features(window):
     x = np.append(x, _compute_max())    
 #    print 'done'
     #print "x " + str(x)   
-    #x = np.append(x, _compute_rfft(window))
-    #print "x " + str(x)
+    x = np.append(x, _compute_rfft_x())
+     #print "x " + str(x)
         
     
     return x

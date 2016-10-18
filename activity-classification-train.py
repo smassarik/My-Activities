@@ -81,7 +81,7 @@ n_samples = 1000
 time_elapsed_seconds = (data[n_samples,0] - data[0,0]) / 1000
 sampling_rate = n_samples / time_elapsed_seconds
 
-feature_names = ["mean X", "mean Y", "mean Z", "std X", "std Y", "std Z", "root mean square", "median x", "median y", "median z", "mean magnitude", "median magnitude", "std magnitude", "minimum", "maximum"]
+feature_names = ["mean X", "mean Y", "mean Z", "std X", "std Y", "std Z", "root mean square", "median x", "median y", "median z", "mean magnitude", "median magnitude", "std magnitude", "minimum", "maximum","fft x"]
 class_names = ["Stationary", "Walking"]
 
 print("Extracting features and labels for window size {} and step size {}...".format(window_size, step_size))
