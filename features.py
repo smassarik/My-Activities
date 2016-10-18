@@ -85,7 +85,7 @@ def _compute_rfft_x():
     n_freq = 8
     sp =np.fft.fft(x_axis,n=n_freq)
     freq = np.fft.fftfreq(n_freq)
-    print sp.real.argmax()
+
     return freq[sp.real.argmax()]
     
 def _compute_rfft_y():
@@ -93,14 +93,14 @@ def _compute_rfft_y():
     n_freq = 8
     sp =np.fft.fft(y_axis,n=n_freq)
     freq = np.fft.fftfreq(n_freq)
-    print sp.real.argmax()
+
     return freq[sp.real.argmax()]
 def _compute_rfft_z():
     global x_axis
     n_freq = 8
     sp =np.fft.fft(z_axis,n=n_freq)
     freq = np.fft.fftfreq(n_freq)
-    print sp.real.argmax()
+
     return freq[sp.real.argmax()]
     
 def _compute_min():
