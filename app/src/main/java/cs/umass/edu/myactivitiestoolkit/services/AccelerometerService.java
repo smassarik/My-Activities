@@ -241,7 +241,7 @@ public class AccelerometerService extends SensorService implements SensorEventLi
 //            Log.d(TAG, "X : " + event.values[0] + ", Y : " + event.values[1] + ", Z : " + event.values[2]);
 
             float[] filteredValues = mFilter.getFilteredValues(event.values);
-//          labels = ["walking", "sitting", "running", "jumping", "biking", "jogging"]
+//          labels = ["walking", "sitting", "running", "jumping"]
             AccelerometerReading accelerometerReading = new AccelerometerReading(mUserID, "MOBILE", "", timestamp_in_milliseconds, 2, filteredValues);
             mClient.sendSensorReading(accelerometerReading);
 
