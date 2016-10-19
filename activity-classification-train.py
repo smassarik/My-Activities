@@ -47,7 +47,7 @@ import pickle
 
 print("Loading data...")
 sys.stdout.flush()
-data_file = os.path.join('data', 'activity-data.csv')
+data_file = os.path.join('data', 'my-activity-data.csv')
 data = np.genfromtxt(data_file, delimiter=',')
 print("Loaded {} raw labelled activity data samples.".format(len(data)))
 sys.stdout.flush()
@@ -73,8 +73,8 @@ data = np.append(reoriented_data_with_timestamps, data[:,-1:], axis=1)
 # -----------------------------------------------------------------------------
 
 # you may want to play around with the window and step sizes
-window_size = 1000
-step_size = 1000
+window_size = 20
+step_size = 20
 
 # sampling rate for the sample data should be about 25 Hz; take a brief window to confirm this
 n_samples = 1000
