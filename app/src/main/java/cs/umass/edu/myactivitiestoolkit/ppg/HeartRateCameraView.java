@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import cs.umass.edu.myactivitiestoolkit.services.PPGService;
 import cs.umass.edu.myactivitiestoolkit.util.ImageFormatConverter;
 
 /**
@@ -226,6 +227,12 @@ public class HeartRateCameraView extends SurfaceView implements Callback, Camera
         ImageFormatConverter.decodeYUV420SP(pixels, data, width, height);
 
         //TODO: Compute the mean red value and notify all listeners
+
+        int total =Color.red(pixels.setSize((int)(width*.75), (int)(height*.75)));
+        double average = total/((width*.75)*(height*.75));
+
+
+
     }
 
     /**

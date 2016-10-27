@@ -112,11 +112,14 @@ public class PPGService extends SensorService implements PPGListener
     @Override
     protected void registerSensors() {
         // TODO: Register a PPG listener with the PPG sensor (mPPGSensor)
+         mPPGSensor.registerListener(this);
+
     }
 
     @Override
     protected void unregisterSensors() {
         // TODO: Unregister the PPG listener
+        mPPGSensor.unregisterListener(this);
     }
 
     @Override
@@ -164,6 +167,9 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Buffer data if necessary for your algorithm
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
+
+
+
     }
 
     /**
