@@ -168,9 +168,16 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
 
-    //we are given filter
+
+        //we are given filter
+        Filter mFilter = new Filter(1);
+        float[] filteredValues = mFilter.getFilteredValues((float) event.value);
         // average is from event
+        final long time = event.timestamp;
+        final double filtered = (double) filteredValues[0];
+        broadcastPPGReading(time, filtered);
         //now the algorithm
+        
 
     }
 
