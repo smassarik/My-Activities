@@ -229,10 +229,15 @@ public class HeartRateCameraView extends SurfaceView implements Callback, Camera
 
         //TODO: Compute the mean red value and notify all listeners
 
-        int total = Color.red(pixels.setSize((int)(width*.75), (int)(height*.75)));
-        double average = total/((width*.75)*(height*.75));
-        time = PPGSensorReading.getTimestamp();
-        PPGService.onSensorChanged(,average);
+        int total = 0;
+
+        for(int x = 0; x < pixels.length; x++){
+            total +=  Color.red(pixels[x]);
+        }
+
+        double average = total/pixels.length;
+
+        listeners.get(0).onSensorChanged(new PPGEvent(average, System.currentTimeMillis()));
 
 
     }

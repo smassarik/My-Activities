@@ -168,7 +168,9 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
 
-
+    //we are given filter
+        // average is from event
+        //now the algorithm
 
     }
 
