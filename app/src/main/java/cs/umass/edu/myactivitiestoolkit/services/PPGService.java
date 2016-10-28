@@ -10,6 +10,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import cs.umass.edu.myactivitiestoolkit.R;
 import cs.umass.edu.myactivitiestoolkit.ppg.HRSensorReading;
 import cs.umass.edu.myactivitiestoolkit.ppg.PPGSensorReading;
@@ -158,6 +161,10 @@ public class PPGService extends SensorService implements PPGListener
      * @see MobileIOClient
      * @see HRSensorReading
      */
+
+    int bmp;
+    int count;
+
     @SuppressWarnings("deprecation")
     @Override
     public void onSensorChanged(PPGEvent event) {
@@ -177,9 +184,40 @@ public class PPGService extends SensorService implements PPGListener
         final double filtered = (double) filteredValues[0];
         broadcastPPGReading(time, filtered);
         //now the algorithm
-        
 
+
+        LinkedList queueL = new LinkedList();
+        LinkedList queues = new LinkedList();
+
+        if (queueL.size() < 60 && queues.size() < 10) {
+            queueL.addLast(filtered);
+            queueL.addLast(filtered);
+        }
+        else{
+            queueL.removeFirst();
+            queueL.addLast(filtered);
+            queues.removeFirst();
+            queues.addLast(filtered);
+        }
+
+         Integer[] a = queues.toArray(Integer);
+        int diff = a(9)- a(0);
+
+        if (diff> 3){
+            count++;
+        }
+        bmp = count/queueL.size();
+
+        bmp = bmp*60;
+        broadcastBPM(bmp);
     }
+/*
+linked list no more than 60
+need to know when first and last is
+add element to end of linked list
+then take the previous n up to 60 and divide it by 60
+ */
+
 
     /**
      * Broadcasts the PPG reading to other application components, e.g. the main UI.
