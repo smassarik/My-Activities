@@ -168,7 +168,7 @@ public class PPGService extends SensorService implements PPGListener
    // LinkedList queueL = new LinkedList();
    //LinkedList queueS = new LinkedList();
    // LinkedList queueT = new LinkedList();
-    int bpm;
+    int bpm = 5;
     double max = 0;
     double min = 0;
     double maxtime = 0;
@@ -200,30 +200,38 @@ public class PPGService extends SensorService implements PPGListener
 
 
         if (filtered > max) {
-            Date sec = new Date(event.timestamp);
-            max = event.value;
-            maxtime = sec.getSeconds();
-        }
-        if (event.value < min) {
-            Date sec = new Date(event.timestamp);
-            min = event.value;
-            mintime = sec.getSeconds();
-        }
-        //if(max<min){
-          //  double temp;
-            //max = min;
-            //min = temp;
-        //}
-        if ((max - min) > 3 && (maxtime - mintime)> .75 && (maxtime - mintime) < 4 )  {
-            Date sec = new Date(event.timestamp);
-            oldtime = sec.getSeconds();
-            double diff = ((maxtime - mintime));
 
-            bpm = (int) ((diff) * 60);
-            max = 0;
-            maxtime = 0;
-            mintime =0;
-            min = 0;
+            Date sec = new Date(event.timestamp);
+            max = filtered;
+            maxtime = sec.getSeconds();
+            Log.d("filter max:",Double.toString(max));
+        }
+        if (filtered < min) {
+
+            Date sec = new Date(event.timestamp);
+            min = filtered;
+            mintime = sec.getSeconds();
+            Log.d("filter min:",Double.toString(min));
+        }
+        String x = Double.toString((maxtime-oldtime));
+        Log.d("diff",x);
+        String y = Double.toString((max-min));
+        Log.d("max - min",y);
+        if ((max - min) > .5 && (maxtime - oldtime)> 2 && (maxtime - oldtime) < 4 )  {
+            if(oldtime == 0){
+                maxtime = oldtime;
+                Log.d("oldtime change:",Double.toString(oldtime));
+            }
+            else {
+                double diff = ((maxtime - oldtime));
+                bpm = (int) (60 / diff);
+                diff = 0;
+                maxtime = oldtime;
+                max = 0;
+                maxtime = 0;
+                mintime = 0;
+                min = 0;
+            }
         }
 
 
