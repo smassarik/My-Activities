@@ -5,11 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.nfc.Tag;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -162,8 +164,17 @@ public class PPGService extends SensorService implements PPGListener
      * @see HRSensorReading
      */
 
-    int bmp;
-    int count;
+
+   // LinkedList queueL = new LinkedList();
+   //LinkedList queueS = new LinkedList();
+   // LinkedList queueT = new LinkedList();
+    int bpm;
+    double max = 0;
+    double min = 0;
+    double maxtime = 0;
+    double mintime = 0;
+    double oldtime =0;
+
 
     @SuppressWarnings("deprecation")
     @Override
@@ -177,31 +188,81 @@ public class PPGService extends SensorService implements PPGListener
 
 
         //we are given filter
+
         Filter mFilter = new Filter(1);
         float[] filteredValues = mFilter.getFilteredValues((float) event.value);
         // average is from event
         final long time = event.timestamp;
         final double filtered = (double) filteredValues[0];
+        double f = (double) filteredValues[1];
         broadcastPPGReading(time, filtered);
         //now the algorithm
 
 
-        LinkedList queueL = new LinkedList();
-        LinkedList queues = new LinkedList();
-
-        if (queueL.size() < 60 && queues.size() < 10) {
-            queueL.addLast(filtered);
-            queueL.addLast(filtered);
+        if (filtered > max) {
+            Date sec = new Date(event.timestamp);
+            max = event.value;
+            maxtime = sec.getSeconds();
         }
+        if (event.value < min) {
+            Date sec = new Date(event.timestamp);
+            min = event.value;
+            mintime = sec.getSeconds();
+        }
+        //if(max<min){
+          //  double temp;
+            //max = min;
+            //min = temp;
+        //}
+        if ((max - min) > 3 && (maxtime - mintime)> .75 && (maxtime - mintime) < 4 )  {
+            Date sec = new Date(event.timestamp);
+            oldtime = sec.getSeconds();
+            double diff = ((maxtime - mintime));
+
+            bpm = (int) ((diff) * 60);
+            max = 0;
+            maxtime = 0;
+            mintime =0;
+            min = 0;
+        }
+
+
+        broadcastBPM(bpm);
+
+    }
+/*
+        if (queueL.size() < 60 && queueS.size() < 10) {
+            queueL.addLast(filtered);
+            queueT.addLast(System.currentTimeMillis());
+            queueS.addLast(filtered);
+            if(filtered < min ) min = filtered;
+            if(filtered > max) max = filtered;
+        }
+        else if(queueL.size() < 60) {
+            queueL.addLast(filtered);
+            queueT.addLast(System.currentTimeMillis());
+            queueS.addLast(filtered);
+            if(filtered < min ) min = filtered;
+            if(filtered > max) max = filtered;
+            if(max-min > 3 && System.currentTimeMillis()- t > 3000){
+                count++;
+                t = System.currentTimeMillis();
+
+
+
+            }
+        }
+
         else{
             queueL.removeFirst();
             queueL.addLast(filtered);
-            queues.removeFirst();
-            queues.addLast(filtered);
+            queueS.removeFirst();
+            queueS.addLast(filtered);
         }
 
-         Integer[] a = queues.toArray(Integer);
-        int diff = a(9)- a(0);
+        Object[] s = new Object[queueS.toArray()];
+        s.sort();
+        Integer diff = a(s.length)- a(0);
 
         if (diff> 3){
             count++;
@@ -210,7 +271,8 @@ public class PPGService extends SensorService implements PPGListener
 
         bmp = bmp*60;
         broadcastBPM(bmp);
-    }
+        */
+
 /*
 linked list no more than 60
 need to know when first and last is
