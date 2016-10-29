@@ -169,11 +169,11 @@ public class PPGService extends SensorService implements PPGListener
    //LinkedList queueS = new LinkedList();
    // LinkedList queueT = new LinkedList();
     int bpm = 5;
-    double max = 0;
-    double min = 0;
+    double redMax = 0;
+    double redMin = 1000000;
     double maxtime = 0;
     double mintime = 0;
-    double oldtime =0;
+    double oldtime = 0;
 
 
     @SuppressWarnings("deprecation")
@@ -185,8 +185,6 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Buffer data if necessary for your algorithm
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
-
-
         //we are given filter
 
         Filter mFilter = new Filter(1);
@@ -194,47 +192,35 @@ public class PPGService extends SensorService implements PPGListener
         // average is from event
         final long time = event.timestamp;
         final double filtered = (double) filteredValues[0];
-        double f = (double) filteredValues[1];
         broadcastPPGReading(time, filtered);
         //now the algorithm
-
-
-        if (filtered > max) {
-
-            Date sec = new Date(event.timestamp);
-            max = filtered;
-            maxtime = sec.getSeconds();
-            Log.d("filter max:",Double.toString(max));
+        if(oldtime == 0 )oldtime = time;
+        if (filtered > redMax) {
+            redMax = filtered;
+            maxtime = event.timestamp;
+            Log.d("filter max:",Double.toString(redMax));
         }
-        if (filtered < min) {
-
-            Date sec = new Date(event.timestamp);
-            min = filtered;
-            mintime = sec.getSeconds();
-            Log.d("filter min:",Double.toString(min));
+//        Log.d("first","first");
+        if (filtered < redMin) {
+            redMin = filtered;
+            mintime = event.timestamp;
+            Log.d("filter min:",Double.toString(redMin));
         }
-        String x = Double.toString((maxtime-oldtime));
-        Log.d("diff",x);
-        String y = Double.toString((max-min));
-        Log.d("max - min",y);
-        if ((max - min) > .5 && (maxtime - oldtime)> 2 && (maxtime - oldtime) < 4 )  {
-            if(oldtime == 0){
-                maxtime = oldtime;
-                Log.d("oldtime change:",Double.toString(oldtime));
-            }
-            else {
-                double diff = ((maxtime - oldtime));
-                bpm = (int) (60 / diff);
-                diff = 0;
-                maxtime = oldtime;
-                max = 0;
+            double timeDiff = (maxtime - oldtime)/1000;
+        Log.d("timeDiff",Double.toString((maxtime-oldtime)));
+        if ((redMax - redMin) > .5 && timeDiff > .3003) {
+            Log.d("redMax - redMin",Double.toString((redMax-redMin)));
+            if(oldtime != 0){
+                bpm = (int) (60 / timeDiff);
+                timeDiff = 0;
+                redMax = 0;
                 maxtime = 0;
                 mintime = 0;
-                min = 0;
+                redMin = 1000000;
             }
+            oldtime = maxtime;
         }
-
-
+//        Log.d("third","third");
         broadcastBPM(bpm);
 
     }
