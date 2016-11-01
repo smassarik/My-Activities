@@ -18,7 +18,7 @@ import numpy as np
 import os
 
 # TODO: Replace the string with your user ID
-user_id = ""
+user_id = "b3.ba.e3.af.0b.b1.0b.bc.51.f1"
 
 # TODO: Change the filename of the output file.
 # You should keep it in the format "speaker-data-<speaker>-#.csv"
