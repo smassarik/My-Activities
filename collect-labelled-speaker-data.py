@@ -26,6 +26,9 @@ filename="speaker-data-HenryVIII-1.csv"
 
 # TODO: Change the label to match the speaker; it must be numeric
 label = 0
+# 0 = shoshana
+# 1 = andrew
+# 2 = trent
 
 data_dir = "data"
 

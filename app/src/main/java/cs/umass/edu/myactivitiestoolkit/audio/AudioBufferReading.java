@@ -1,9 +1,11 @@
-package cs.umass.edu.myactivitiestoolkit.audio;
+package edu.umass.cs.MHLClient.sensors;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import edu.umass.cs.MHLClient.sensors.SensorReading;
 
 /**
  * Wraps an audio buffer into a sensor reading to send to the server.
@@ -34,14 +36,15 @@ public class AudioBufferReading extends SensorReading {
         this.buffer = buffer;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     protected JSONObject toJSONObject() {
         JSONObject obj = getBaseJSONObject();
         JSONObject data = new JSONObject();
-
         try {
             data.put("t", timestamp);
-            data.put("values", buffer);
+            JSONArray audioBuffer = new JSONArray(buffer);
+            data.put("values", audioBuffer);
             obj.put("data", data);
         } catch (JSONException e) {
             e.printStackTrace();
