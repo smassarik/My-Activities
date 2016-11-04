@@ -168,13 +168,13 @@ public class PPGService extends SensorService implements PPGListener
    // LinkedList queueL = new LinkedList();
    //LinkedList queueS = new LinkedList();
    // LinkedList queueT = new LinkedList();
-    int bpm = 5;
-    double redMax = 0;
-    double redMin = 1000000;
-    double maxtime = 0;
-    double mintime = 0;
-    double oldtime = 0;
-
+    int bpm = 0;
+    double redMax = 0.0,
+           redMin = 1000000.0,
+           maxtime = 0.0,
+           mintime = 0.0,
+           oldtime = 0.0;
+    boolean flag = false;
 
     @SuppressWarnings("deprecation")
     @Override
@@ -189,41 +189,42 @@ public class PPGService extends SensorService implements PPGListener
 
         Filter mFilter = new Filter(1);
         float[] filteredValues = mFilter.getFilteredValues((float) event.value);
-        // average is from event
         final long time = event.timestamp;
         final double filtered = (double) filteredValues[0];
+        mintime = time;
+        maxtime = time;
         broadcastPPGReading(time, filtered);
-        //now the algorithm
-        if(oldtime == 0 )oldtime = time;
         if (filtered > redMax) {
             redMax = filtered;
-            maxtime = event.timestamp;
-            Log.d("filter max:",Double.toString(redMax));
-        }
-//        Log.d("first","first");
-        if (filtered < redMin) {
-            redMin = filtered;
-            mintime = event.timestamp;
-            Log.d("filter min:",Double.toString(redMin));
-        }
-            double timeDiff = (maxtime - oldtime)/1000;
-        Log.d("timeDiff",Double.toString((maxtime-oldtime)));
-        if ((redMax - redMin) > .5 && timeDiff > .3003) {
-            Log.d("redMax - redMin",Double.toString((redMax-redMin)));
-            if(oldtime != 0){
-                bpm = (int) (60 / timeDiff);
-                timeDiff = 0;
-                redMax = 0;
-                maxtime = 0;
-                mintime = 0;
-                redMin = 1000000;
-            }
             oldtime = maxtime;
+            maxtime = time;
+            flag = true;
+        }else if (filtered < redMin) {
+            redMin = filtered;
+            oldtime = mintime;
+            mintime = time;
+            flag = false;
         }
-//        Log.d("third","third");
+        double timeDiff = (flag == true) ? (maxtime - oldtime)/1000 : (mintime - oldtime)/1000;
+        // example: timeDiff = .3;                                      example: bpm = 40
+        // bpm = beats/60 sec                                           40 beats/60 sec; [(1/40)*40 beats / (1/40)*60 sec]
+        // 1 beat/.3 sec; [(60/.3=200)*1 beat/(60/.3=200)*.3sec]        1 beat / (60/40=1.5) sec
+        // bpm = 200beats/min                                           timeDiff = 1.5
+        if ((redMax - redMin) > 1.5 && timeDiff > .3 && timeDiff < 1.5) {
+            if(oldtime != 0.0){
+                bpm = (int) (60/timeDiff);
+                redMax = 0.0;
+                redMin = 1000000.0;
+            }
+            oldtime = (flag == true) ? maxtime : mintime;
+        }else if(timeDiff > 1.5){
+            redMin = 0.0;
+            redMax = 0.0;
+        }
         broadcastBPM(bpm);
-
     }
+
+
 /*
         if (queueL.size() < 60 && queueS.size() < 10) {
             queueL.addLast(filtered);
