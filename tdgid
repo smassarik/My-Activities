@@ -1,0 +1,165 @@
+[1mdiff --git a/app/build.gradle b/app/build.gradle[m
+[1mindex 46be427..52b90f9 100644[m
+[1m--- a/app/build.gradle[m
+[1m+++ b/app/build.gradle[m
+[36m@@ -23,7 +23,7 @@[m [mandroid {[m
+ dependencies {[m
+     compile fileTree(dir: 'libs', include: ['*.jar'])[m
+     compile 'com.android.support:appcompat-v7:24.1.1'[m
+[31m-    compile 'edu.umass.cs.MHLClient:mhlclient:2.3.3'[m
+[32m+[m[32m    compile 'edu.umass.cs.MHLClient:mhlclient:3.1.3'[m
+     compile 'com.android.support:design:24.1.1'[m
+     compile 'com.android.support:support-v13:24.1.1'[m
+     compile 'com.google.android.gms:play-services-maps:9.2.1'[m
+[1mdiff --git a/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/PPGService.java b/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/PPGService.java[m
+[1mindex c4c1427..6c42dab 100644[m
+[1m--- a/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/PPGService.java[m
+[1m+++ b/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/PPGService.java[m
+[36m@@ -175,6 +175,7 @@[m [mpublic class PPGService extends SensorService implements PPGListener[m
+            mintime = 0.0,[m
+            oldtime = 0.0;[m
+     boolean flag = false;[m
+[32m+[m[32m    Filter mFilter = new Filter(4);[m
+ [m
+     @SuppressWarnings("deprecation")[m
+     @Override[m
+[36m@@ -185,14 +186,12 @@[m [mpublic class PPGService extends SensorService implements PPGListener[m
+         // TODO: Buffer data if necessary for your algorithm[m
+         // TODO: Call your heart beat and bpm detection algorithm[m
+         // TODO: Send your heart rate estimate to the server[m
+[31m-        //we are given filter[m
+ [m
+[31m-        Filter mFilter = new Filter(1);[m
+         float[] filteredValues = mFilter.getFilteredValues((float) event.value);[m
+         final long time = event.timestamp;[m
+         final double filtered = (double) filteredValues[0];[m
+[31m-        mintime = time;[m
+[31m-        maxtime = time;[m
+[32m+[m[32m        mintime = mintime==0?time:mintime;[m
+[32m+[m[32m        maxtime = maxtime==0?time:maxtime;[m
+         broadcastPPGReading(time, filtered);[m
+         if (filtered > redMax) {[m
+             redMax = filtered;[m
+[36m@@ -205,77 +204,33 @@[m [mpublic class PPGService extends SensorService implements PPGListener[m
+             mintime = time;[m
+             flag = false;[m
+         }[m
+[31m-        double timeDiff = (flag == true) ? (maxtime - oldtime)/1000 : (mintime - oldtime)/1000;[m
+[32m+[m
+[32m+[m[32m        // timeDiff should be doubled because we are counting both peaks and troughs but[m
+[32m+[m[32m        // for some reason the bpm appears more normal (~80 as opposed to ~40) without doing so[m
+[32m+[m[32m        double timeDiff = (flag)?(maxtime - oldtime)/1000:(mintime - oldtime)/1000;[m
+[32m+[m
+         // example: timeDiff = .3;                                      example: bpm = 40[m
+         // bpm = beats/60 sec                                           40 beats/60 sec; [(1/40)*40 beats / (1/40)*60 sec][m
+         // 1 beat/.3 sec; [(60/.3=200)*1 beat/(60/.3=200)*.3sec]        1 beat / (60/40=1.5) sec[m
+         // bpm = 200beats/min                                           timeDiff = 1.5[m
+[31m-        if ((redMax - redMin) > 1.5 && timeDiff > .3 && timeDiff < 1.5) {[m
+[32m+[m[32m        if ((redMax - redMin) > .5 && (redMax-redMin) < 6 && timeDiff > .3 && timeDiff < 1.5) {[m
+[32m+[m[32m            Log.d("asdf", ""+(redMax-redMin));[m
+             if(oldtime != 0.0){[m
+[32m+[m[32m                Log.d("timediff: ", ""+timeDiff);[m
+                 bpm = (int) (60/timeDiff);[m
+                 redMax = 0.0;[m
+                 redMin = 1000000.0;[m
+             }[m
+[31m-            oldtime = (flag == true) ? maxtime : mintime;[m
+[32m+[m[32m            broadcastPeak(time, redMax); //testing has been difficult because broadcastPeak is not working[m
+[32m+[m[32m            oldtime = (flag)?maxtime:mintime;[m
+         }else if(timeDiff > 1.5){[m
+[31m-            redMin = 0.0;[m
+[32m+[m[32m            redMin = 1000000.0;[m
+             redMax = 0.0;[m
+         }[m
+         broadcastBPM(bpm);[m
+     }[m
+ [m
+ [m
+[31m-/*[m
+[31m-        if (queueL.size() < 60 && queueS.size() < 10) {[m
+[31m-            queueL.addLast(filtered);[m
+[31m-            queueT.addLast(System.currentTimeMillis());[m
+[31m-            queueS.addLast(filtered);[m
+[31m-            if(filtered < min ) min = filtered;[m
+[31m-            if(filtered > max) max = filtered;[m
+[31m-        }[m
+[31m-        else if(queueL.size() < 60) {[m
+[31m-            queueL.addLast(filtered);[m
+[31m-            queueT.addLast(System.currentTimeMillis());[m
+[31m-            queueS.addLast(filtered);[m
+[31m-            if(filtered < min ) min = filtered;[m
+[31m-            if(filtered > max) max = filtered;[m
+[31m-            if(max-min > 3 && System.currentTimeMillis()- t > 3000){[m
+[31m-                count++;[m
+[31m-                t = System.currentTimeMillis();[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-            }[m
+[31m-        }[m
+[31m-[m
+[31m-        else{[m
+[31m-            queueL.removeFirst();[m
+[31m-            queueL.addLast(filtered);[m
+[31m-            queueS.removeFirst();[m
+[31m-            queueS.addLast(filtered);[m
+[31m-        }[m
+[31m-[m
+[31m-        Object[] s = new Object[queueS.toArray()];[m
+[31m-        s.sort();[m
+[31m-        Integer diff = a(s.length)- a(0);[m
+[31m-[m
+[31m-        if (diff> 3){[m
+[31m-            count++;[m
+[31m-        }[m
+[31m-        bmp = count/queueL.size();[m
+[31m-[m
+[31m-        bmp = bmp*60;[m
+[31m-        broadcastBPM(bmp);[m
+[31m-        */[m
+[31m-[m
+[31m-/*[m
+[31m-linked list no more than 60[m
+[31m-need to know when first and last is[m
+[31m-add element to end of linked list[m
+[31m-then take the previous n up to 60 and divide it by 60[m
+[31m- */[m
+[31m-[m
+[31m-[m
+     /**[m
+      * Broadcasts the PPG reading to other application components, e.g. the main UI.[m
+      * @param ppgReading the mean red value.[m
+[1mdiff --git a/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/SensorService.java b/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/SensorService.java[m
+[1mindex 93fbabc..bae2c52 100644[m
+[1m--- a/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/SensorService.java[m
+[1m+++ b/app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/SensorService.java[m
+[36m@@ -139,7 +139,7 @@[m [mpublic abstract class SensorService extends Service implements ConnectionStateHa[m
+      */[m
+     protected void connectToServer(){[m
+         mUserID = getString(R.string.mobile_health_client_user_id);[m
+[31m-        mClient = MobileIOClient.getInstance(mUserID);[m
+[32m+[m[32m        mClient = MobileIOClient.getInstance(this, mUserID);[m
+         mClient.setConnectionStateHandler(this);[m
+         mClient.connect();[m
+     }[m
+[1mdiff --git a/app/src/main/java/cs/umass/edu/myactivitiestoolkit/view/fragments/LocationsFragment.java b/app/src/main/java/cs/umass/edu/myactivitiestoolkit/view/fragments/LocationsFragment.java[m
+[1mindex 6572906..60b9615 100644[m
+[1m--- a/app/src/main/java/cs/umass/edu/myactivitiestoolkit/view/fragments/LocationsFragment.java[m
+[1m+++ b/app/src/main/java/cs/umass/edu/myactivitiestoolkit/view/fragments/LocationsFragment.java[m
+[36m@@ -162,7 +162,7 @@[m [mpublic class LocationsFragment extends Fragment {[m
+         super.onCreate(savedInstanceState);[m
+         serviceManager = ServiceManager.getInstance(getActivity());[m
+         userID = getString(R.string.mobile_health_client_user_id);[m
+[31m-        client = MobileIOClient.getInstance(userID);[m
+[32m+[m[32m        client = MobileIOClient.getInstance(getActivity(), userID);[m
+     }[m
+ [m
+     @Override[m
+warning: LF will be replaced by CRLF in app/build.gradle.
+The file will have its original line endings in your working directory.
+warning: LF will be replaced by CRLF in app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/PPGService.java.
+The file will have its original line endings in your working directory.
+warning: LF will be replaced by CRLF in app/src/main/java/cs/umass/edu/myactivitiestoolkit/services/SensorService.java.
+The file will have its original line endings in your working directory.
+warning: LF will be replaced by CRLF in app/src/main/java/cs/umass/edu/myactivitiestoolkit/view/fragments/LocationsFragment.java.
+The file will have its original line endings in your working directory.

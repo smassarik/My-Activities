@@ -175,6 +175,7 @@ public class PPGService extends SensorService implements PPGListener
            mintime = 0.0,
            oldtime = 0.0;
     boolean flag = false;
+    Filter mFilter = new Filter(4);
 
     @SuppressWarnings("deprecation")
     @Override
@@ -185,14 +186,12 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Buffer data if necessary for your algorithm
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
-        //we are given filter
 
-        Filter mFilter = new Filter(1);
         float[] filteredValues = mFilter.getFilteredValues((float) event.value);
         final long time = event.timestamp;
         final double filtered = (double) filteredValues[0];
-        mintime = time;
-        maxtime = time;
+        mintime = mintime==0?time:mintime;
+        maxtime = maxtime==0?time:maxtime;
         broadcastPPGReading(time, filtered);
         if (filtered > redMax) {
             redMax = filtered;
@@ -205,75 +204,31 @@ public class PPGService extends SensorService implements PPGListener
             mintime = time;
             flag = false;
         }
-        double timeDiff = (flag == true) ? (maxtime - oldtime)/1000 : (mintime - oldtime)/1000;
+
+        // timeDiff should be doubled because we are counting both peaks and troughs but
+        // for some reason the bpm appears more normal (~80 as opposed to ~40) without doing so
+        double timeDiff = (flag)?(maxtime - oldtime)/1000:(mintime - oldtime)/1000;
+
         // example: timeDiff = .3;                                      example: bpm = 40
         // bpm = beats/60 sec                                           40 beats/60 sec; [(1/40)*40 beats / (1/40)*60 sec]
         // 1 beat/.3 sec; [(60/.3=200)*1 beat/(60/.3=200)*.3sec]        1 beat / (60/40=1.5) sec
         // bpm = 200beats/min                                           timeDiff = 1.5
-        if ((redMax - redMin) > 1.5 && timeDiff > .3 && timeDiff < 1.5) {
+        if ((redMax - redMin) > .5 && (redMax-redMin) < 6 && timeDiff > .3 && timeDiff < 1.5) {
+            Log.d("asdf", ""+(redMax-redMin));
             if(oldtime != 0.0){
+                Log.d("timediff: ", ""+timeDiff);
                 bpm = (int) (60/timeDiff);
                 redMax = 0.0;
                 redMin = 1000000.0;
             }
-            oldtime = (flag == true) ? maxtime : mintime;
+            broadcastPeak(time, redMax);
+            oldtime = (flag)?maxtime:mintime;
         }else if(timeDiff > 1.5){
-            redMin = 0.0;
+            redMin = 1000000.0;
             redMax = 0.0;
         }
         broadcastBPM(bpm);
     }
-
-
-/*
-        if (queueL.size() < 60 && queueS.size() < 10) {
-            queueL.addLast(filtered);
-            queueT.addLast(System.currentTimeMillis());
-            queueS.addLast(filtered);
-            if(filtered < min ) min = filtered;
-            if(filtered > max) max = filtered;
-        }
-        else if(queueL.size() < 60) {
-            queueL.addLast(filtered);
-            queueT.addLast(System.currentTimeMillis());
-            queueS.addLast(filtered);
-            if(filtered < min ) min = filtered;
-            if(filtered > max) max = filtered;
-            if(max-min > 3 && System.currentTimeMillis()- t > 3000){
-                count++;
-                t = System.currentTimeMillis();
-
-
-
-            }
-        }
-
-        else{
-            queueL.removeFirst();
-            queueL.addLast(filtered);
-            queueS.removeFirst();
-            queueS.addLast(filtered);
-        }
-
-        Object[] s = new Object[queueS.toArray()];
-        s.sort();
-        Integer diff = a(s.length)- a(0);
-
-        if (diff> 3){
-            count++;
-        }
-        bmp = count/queueL.size();
-
-        bmp = bmp*60;
-        broadcastBPM(bmp);
-        */
-
-/*
-linked list no more than 60
-need to know when first and last is
-add element to end of linked list
-then take the previous n up to 60 and divide it by 60
- */
 
 
     /**
