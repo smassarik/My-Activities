@@ -112,8 +112,8 @@ public abstract class SensorService extends Service implements ConnectionStateHa
     protected void stop(){
         Log.d(TAG, "Service stopped");
         unregisterSensors();
-//        if (client != null)
-//            client.disconnect(); //TODO
+        if (mClient != null)
+            mClient.disconnect(); //TODO
         stopForeground(true);
         stopSelf();
         onServiceStopped();
