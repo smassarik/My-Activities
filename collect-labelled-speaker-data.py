@@ -29,6 +29,7 @@ label = 0
 # 0 = shoshana
 # 1 = andrew
 # 2 = trent
+# 4 = no speaker
 
 data_dir = "data"
 
@@ -138,15 +139,12 @@ try:
             raise KeyboardInterrupt
             break
         except Exception as e:
-	# ignore exceptions, such as parsing the json
-	# if a connection timeout occurs, also ignore and try again. 	
-	# Use Ctrl-C to stop but make sure the error is displayed 
-	# so we know what's going on
-	if (e.message != "timed out"): # ignore timeout exceptions completely       
-		print(e)
-	else:
-		previous_json=''
-	pass
+            # ignore exceptions, such as parsing the json
+            # if a connection timeout occurs, also ignore and try again. Use Ctrl-C to stop
+            # but make sure the error is displayed so we know what's going on
+            if (e.message != "timed out"):  # ignore timeout exceptions completely       
+                print(e)
+            pass
 except KeyboardInterrupt: 
     # occurs when the user presses Ctrl-C
     print("User Interrupt. Saving labelled data...")
