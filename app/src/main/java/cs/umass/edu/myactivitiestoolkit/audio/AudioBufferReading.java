@@ -1,4 +1,4 @@
-package edu.umass.cs.MHLClient.sensors;
+package cs.umass.edu.myactivitiestoolkit.audio;
 
 import android.annotation.TargetApi;
 import android.os.Build;
@@ -6,6 +6,8 @@ import android.os.Build;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import edu.umass.cs.MHLClient.sensors.SensorReading;
 
 /**
  * Wraps an audio buffer into a sensor reading to send to the server.
