@@ -22,10 +22,10 @@ user_id = "b3.ba.e3.af.0b.b1.0b.bc.51.f1"
 
 # TODO: Change the filename of the output file.
 # You should keep it in the format "speaker-data-<speaker>-#.csv"
-filename="speaker-data-shoshana-1.csv"
 
-# TODO: Change the label to match the speaker; it must be numeric
+filename = ""
 label = 0
+
 # 0 = shoshana
 # 1 = andrew
 # 2 = trent
