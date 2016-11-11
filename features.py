@@ -124,7 +124,7 @@ class FeatureExtractor():
         numpy.histogram(a, bins=10, range=None, normed=False, weights=None, density=None)
         """
         
-        freqs, bandwiths = self._compute_formants(self, window)
+        freqs, bandwiths = self._compute_formants(window)
         return np.histogram(freqs, bins=5, range=(40,5500))           
         
     def _compute_pitch_contour(self, window):
@@ -175,7 +175,7 @@ class FeatureExtractor():
         
         You may also want to return the average pitch and standard deviation.
         """
-        pitch_contour, confidence_curve = self._compute_pitch_contour(self, window)
+        pitch_contour, confidence_curve = self._compute_pitch_contour(window)
         return np.histogram(pitch_contour, bins=5, range=(0,128))
         
     def _compute_mfcc(self, window):
