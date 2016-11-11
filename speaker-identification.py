@@ -62,14 +62,17 @@ def predict(window):
     Android application. You must use the same feature 
     extraction method that you used to train the model.
     """
+    features = feature_extractor(window)
+    X = np.reshape(features,(1,-1))
+    speaker = classifier(X)
     
     # TODO: Extract features and predict class label
     
     # You may need to reshape your feature vector into a 1 X d matrix as follows:
-    # X = np.reshape(X,(1,-1))
+    # 
     
     # When you get a label, send it to the UI by calling onSpeakerDetected:
-    # onSpeakerDetected(speaker)
+    onSpeakerDetected(speaker)
     
     return
     
