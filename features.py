@@ -125,7 +125,8 @@ class FeatureExtractor():
         """
         
         freqs, bandwiths = self._compute_formants(window)
-        return np.histogram(freqs, bins=5, range=(40,5500))           
+        r = np.histogram(freqs, bins=5, range=(40,5500))  
+        return r[0]
         
     def _compute_pitch_contour(self, window):
         """
@@ -176,7 +177,8 @@ class FeatureExtractor():
         You may also want to return the average pitch and standard deviation.
         """
         pitch_contour, confidence_curve = self._compute_pitch_contour(window)
-        return np.histogram(pitch_contour, bins=5, range=(0,128))
+        r = np.histogram(pitch_contour, bins=5, range=(0,128))
+        return r[0]
         
     def _compute_mfcc(self, window):
         """
@@ -203,7 +205,7 @@ class FeatureExtractor():
             print("{} MFCCs were computed over {} frames.".format(mfccs.shape[1], mfccs.shape[0]))
         return mfccs
     
-    def _compute_delta_coefficients(self, window, n=2):
+    def _compute_delta_coefficients(self, window, N=2):
         """
         Computes the delta of the MFCC coefficients. See the equation in the assignment details.
         
@@ -217,13 +219,15 @@ class FeatureExtractor():
         mfccs = self._compute_mfcc(window)
         dts = []
         denom = 0
-        for i in range(1, n+1):
+        for i in range(1, N+1):
             denom += 2*(i**2)
+            
             
         for frame in mfccs:
             dt = 0
-            for i in range(1,n+1):
-                dt += (np.multiply(i,frame)/denom)
+            print frame
+            for n in range(1,N+1):
+                dt += (np.multiply(n,frame)/denom)
             dts.append(dt)
             
         return [1] # returns dummy value; replace this with the features you extract
