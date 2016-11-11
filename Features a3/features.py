@@ -175,8 +175,9 @@ class FeatureExtractor():
         
         You may also want to return the average pitch and standard deviation.
         """
-        return [1] # returns dummy value; replace this with the features you extract
-
+        pitch_contour, confidence_curve = self._compute_pitch_contour(self, window)
+        return np.histogram(pitch_contour, bins=5, range=(0,128))
+        
     def _compute_mfcc(self, window):
         """
         Computes the MFCCs of the audio data. MFCCs are not computed over 
