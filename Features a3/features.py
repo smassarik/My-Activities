@@ -121,9 +121,12 @@ class FeatureExtractor():
         Call _compute_formants to get the formats; it will return (frequencies,bandwidths). 
         You should compute the distribution of the frequencies in fixed bins.
         This will give you a feature vector of length len(bins).
+        numpy.histogram(a, bins=10, range=None, normed=False, weights=None, density=None)
         """
-        return [1] # returns dummy value; replace this with the features you extract
-
+        
+        freqs, bandwiths = self._compute_formants(self, window)
+        return np.histogram(freqs, bins=5, range=(40,5500))           
+        
     def _compute_pitch_contour(self, window):
         """
         Computes the pitch contour of the audio data, along with the confidence curve.
