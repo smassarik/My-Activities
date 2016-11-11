@@ -26,7 +26,7 @@ from sklearn.svm import SVC #SVM classifier
 
 from features import FeatureExtractor
 from sklearn import cross_validation
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_score, accuracy_score, recall_score
 import pickle
 
 
@@ -46,7 +46,7 @@ if not os.path.exists(output_dir):
 # the filenames should be in the form 'speaker-data-subject-1.csv', e.g. 'speaker-data-Erik-1.csv'. If they 
 # are not, that's OK but the progress output will look nonsensical
 
-class_names = [] # the set of classes, i.e. speakers
+class_names =  ["shoshana","andrew","Trent"] # the set of classes, i.e. speakers
 
 data = np.zeros((0,8002)) #8002 = 1 (timestamp) + 8000 (for 8kHz audio data) + 1 (label)
 
@@ -75,7 +75,7 @@ print("Found data for {} speakers : {}".format(len(class_names), ", ".join(class
 
 # You may need to change n_features depending on how you compute your features
 # we have it set to 3 to match the dummy values we return in the starter code.
-n_features = 3
+n_features = 5
 
 print("Extracting features and labels for {} audio windows...".format(data.shape[0]))
 sys.stdout.flush()
@@ -113,6 +113,36 @@ n = len(y)
 n_classes = len(class_names)
 
 # TODO: Train your classifier!
+cv = cross_validation.KFold(n, n_folds=10, shuffle=False, random_state=None)
+tree = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+dtavgacc = 0.0
+dtavgprecision = 0.0
+dtavgrecall = 0.0
+
+for i, (train_indexes, test_indexes) in enumerate(cv):
+    X_train = X[train_indexes, :]
+    y_train = y[train_indexes]
+    X_test = X[test_indexes, :]
+    y_test = y[test_indexes]
+    tree.fit(X_train, y_train)
+
+    y_pred = tree.predict(X_test)
+    conf = confusion_matrix(y_test, y_pred, labels=[0,1,2])
+    dtaccuracy1 = tree.score(X_test, y_test)
+    dtprecision = precision_score(y_test, y_pred)
+    dtrecall = recall_score(y_test, y_pred)
+    dtavgacc += dtaccuracy1
+    dtavgprecision += dtprecision
+    dtavgrecall += dtrecall
+    
+    print("Fold {} decision tree accuracy1 {}, precision {}, recall {}".format(i, dtaccuracy1, dtprecision, dtrecall))
+print("Decision tree average accuracy {} precision {} recall {}".format(dtavgacc/10, dtavgprecision/10, dtavgrecall/10))
+print ''
+
+    
+
+
+
 
 # TODO: set your best classifier below, then uncomment the following line to train it on ALL the data:
 best_classifier = None

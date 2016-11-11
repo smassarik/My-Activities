@@ -214,6 +214,18 @@ class FeatureExtractor():
         See section "Deltas and Delta-Deltas" at http://practicalcryptography.com/miscellaneous/machine-learning/guide-mel-frequency-cepstral-coefficients-mfccs/.
         
         """
+        mfccs = self._compute_mfcc(window)
+        dts = []
+        denom = 0
+        for i in range(1, n+1):
+            denom += 2*(i**2)
+            
+        for frame in mfccs:
+            dt = 0
+            for i in range(1,n+1):
+                dt += (np.multiply(i,frame)/denom)
+            dts.append(dt)
+            
         return [1] # returns dummy value; replace this with the features you extract
         
     def _recognize_speech(window):
