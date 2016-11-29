@@ -97,12 +97,12 @@ public class DBScan<T extends Clusterable<T>> {
         //TODO: Implement the DBScan algorithm - currently the code returns a single cluster containing all points
 
         //TODO: The following block of code adds all points to a single cluster. Make sure to remove this!
-        {
-            Cluster<T> fakeCluster = new Cluster<T>();
-            for (final T p : points)
-                fakeCluster.addPoint(p);
-            clusters.add(fakeCluster);
-        }
+        //{
+        //    Cluster<T> fakeCluster = new Cluster<T>();
+        //    for (final T p : points)
+        //        fakeCluster.addPoint(p);
+        //    clusters.add(fakeCluster);
+        //}
 
         return clusters;
 
