@@ -138,7 +138,7 @@ public abstract class SensorService extends Service implements ConnectionStateHa
      * Connects to the data collection server.
      */
     protected void connectToServer(){
-        mUserID = getString(R.string.mobile_health_client_user_id);
+        mUserID = "b3.ba.e3.af.0b.b1.0b.bc.51.f1";
         mClient = MobileIOClient.getInstance(this, mUserID);
         mClient.setConnectionStateHandler(this);
         mClient.connect();
