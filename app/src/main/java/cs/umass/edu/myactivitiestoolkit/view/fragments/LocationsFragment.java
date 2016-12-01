@@ -43,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -368,6 +369,18 @@ public class LocationsFragment extends Fragment {
     private void drawClusters(final Collection<Cluster<GPSLocation>> clusters){
         final int[] colors = new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.CYAN, Color.WHITE};
         // TODO: For each cluster, draw a convex hull around the points in a sufficiently distinct color
+        for(Cluster a: clusters){
+            GPSLocation[] arr = new GPSLocation[a.size()];
+           // ArrayList pts = a.getPoints();
+           // for(int i = 0; i<a.size();i++){
+           //     arr[i] = new GPSLocation(pts.get(i));
+           // }
+            for(GPSLocation loc : a){
+                
+            }
+            drawHullFromPoints(pts,colors[1]);
+        }
+
     }
 
     /**
@@ -379,6 +392,9 @@ public class LocationsFragment extends Fragment {
      */
     private void runDBScan(GPSLocation[] locations, float eps, int minPts){
         //TODO: Cluster the locations by calling DBScan.
+        DBScan scan = new DBScan(eps,minPts);
+        List z = Arrays.asList(locations);
+       List x =  scan.cluster(z);
     }
 
     /**
