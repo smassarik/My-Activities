@@ -96,6 +96,22 @@ public class DBScan<T extends Clusterable<T>> {
 
         //TODO: Implement the DBScan algorithm - currently the code returns a single cluster containing all points
 
+        for(T p: points){
+
+            if(states.get(p) == State.UNVISITED){
+                List<T> neighborPts = regionQuery(p,points);
+                if(neighborPts.size() < minPts){
+                    states.put(p,State.NOISE);
+                }
+                else{
+                    Cluster<T> cluster = new Cluster();
+                    expandCluster(cluster,p,states,neighborPts,points);
+                }
+            }
+
+        }
+
+
         //TODO: The following block of code adds all points to a single cluster. Make sure to remove this!
         //{
         //    Cluster<T> fakeCluster = new Cluster<T>();
@@ -127,6 +143,25 @@ public class DBScan<T extends Clusterable<T>> {
         states.put(p, State.CLUSTERED);
 
         //TODO: Complete the rest of the expandCluster algorithm, as outlined in the slides
+        for(T a: neighborPts ){
+            if(states.get(a) == State.UNVISITED){
+                states.put(a,State.CLUSTERED);
+                List<T> neigborPts2 = regionQuery(a,points);
+                if(neigborPts2.size()>= minPts){
+                    addAsSet(neighborPts,neigborPts2);
+                }
+            }
+            boolean t = false;
+            for(T pt: cluster.getPoints()){
+                if(pt.equals(a)){
+                    t = true;
+                }
+
+            }
+            if (!t) {
+                cluster.addPoint(a);
+            }
+        }
     }
 
     /**
@@ -140,6 +175,11 @@ public class DBScan<T extends Clusterable<T>> {
     private List<T> regionQuery(final T p, final Collection<T> points) {
         //TODO: Query the region around point p to get its neighbors, that is all points within eps of p
         final List<T> neighbors = new ArrayList<T>();
+        for(T pt: points){
+            if(p.distance(pt)<= this.getEps()){
+                neighbors.add(pt);
+            }
+        }
         return neighbors;
     }
 
