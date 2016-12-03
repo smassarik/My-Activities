@@ -193,29 +193,33 @@ public class PPGService extends SensorService implements PPGListener
         mintime = mintime==0?time:mintime;
         maxtime = maxtime==0?time:maxtime;
         broadcastPPGReading(time, filtered);
+        Log.d("PPGSERVICE", "filtered: "+filtered);
         if (filtered > redMax) {
             redMax = filtered;
 //            oldtime = maxtime;
             maxtime = time;
+            Log.d("PPGSERVICE","max found: "+redMax);
 //            flag = true;
         }else if (filtered < redMin) {
             redMin = filtered;
 //            oldtime = mintime;
             mintime = time;
+            Log.d("PPGSERVICE","min found: "+redMin);
 //            flag = false;
         }
 
         // timeDiff should be doubled because we are counting both peaks and troughs but
         // for some reason the bpm appears more normal (~80 as opposed to ~40) without doing so
 //        double timeDiff = (flag)?(maxtime - oldtime)/1000:(mintime - oldtime)/1000;
-        timeDiff = maxtime>mintime?maxtime-mintime:timeDiff;
+//        timeDiff = maxtime>mintime?maxtime-mintime:timeDiff;
+        timeDiff = maxtime-mintime;
         // example: timeDiff = .3;                                      example: bpm = 40
         // bpm = beats/60 sec                                           40 beats/60 sec; [(1/40)*40 beats / (1/40)*60 sec]
         // 1 beat/.3 sec; [(60/.3=200)*1 beat/(60/.3=200)*.3sec]        1 beat / (60/40=1.5) sec
         // bpm = 200beats/min                                           timeDiff = 1.5
         Log.d("red diff",""+(redMax-redMin));
         Log.d("time diff",""+timeDiff);
-        if ((redMax - redMin) > .3 && (redMax-redMin) < 6 && timeDiff > .3 && timeDiff < 1.5) {
+        if ((redMax - redMin) > .3 && (redMax-redMin) < 6 ) {
 //            Log.d("asdf", ""+(redMax-redMin));
 //            if(oldtime != 0.0){
                 Log.d("timediff: ", ""+timeDiff);
@@ -226,8 +230,8 @@ public class PPGService extends SensorService implements PPGListener
             broadcastPeak(time, redMax);
 //            oldtime = (flag)?maxtime:mintime;
         }else if(timeDiff > 1.5){
-            redMin = 10000.0;
-            redMax = 0.0;
+//            redMin = 10000.0;
+//            redMax = 0.0;
         }
         broadcastBPM(bpm);
     }
