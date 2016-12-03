@@ -436,6 +436,19 @@ public class LocationsFragment extends Fragment {
                         int index = indexes[i];
                         //TODO: Using the index of each location, generate a list of k clusters, then call drawClusters().
                         //You may choose to use the Map defined above or find a different way of doing it.
+                        // For example, if we send over points A, B, C, D, E and F and the clustering algorithm
+                        // groups A and D into cluster 0, B, E and F into cluster 1, and C into cluster 2, then
+                        // the resulting array of indexes will be [0,1,2,0,1,1].
+                        if(clusters.get(index) == null){
+                            Cluster c = new Cluster();
+                            c.addPoint(locations[i]);
+                            clusters.put(index, c);
+                        }else{
+                            Cluster c = clusters.get(index);
+                            c.addPoint(locations[i]);
+                            clusters.put(index, c);
+                        }
+
                     }
 
                     // We are only allowed to manipulate the map on the main (UI) thread:
