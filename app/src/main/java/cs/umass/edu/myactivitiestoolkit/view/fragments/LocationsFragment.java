@@ -448,7 +448,6 @@ public class LocationsFragment extends Fragment {
                             c.addPoint(locations[i]);
                             clusters.put(index, c);
                         }
-
                     }
 
                     // We are only allowed to manipulate the map on the main (UI) thread:
@@ -502,6 +501,15 @@ public class LocationsFragment extends Fragment {
                         int index = indexes[i];
                         //TODO: Using the index of each location, generate clusters, then call drawClusters().
                         //You may choose to use the Map defined above or find a different way of doing it.
+                        if(clusters.get(index) == null){
+                            Cluster c = new Cluster();
+                            c.addPoint(locations[i]);
+                            clusters.put(index, c);
+                        }else{
+                            Cluster c = clusters.get(index);
+                            c.addPoint(locations[i]);
+                            clusters.put(index, c);
+                        }
                     }
 
                     // We are only allowed to manipulate the map on the main (UI) thread:
