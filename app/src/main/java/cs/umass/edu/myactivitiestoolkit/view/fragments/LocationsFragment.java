@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.ArrayMap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -369,19 +370,20 @@ public class LocationsFragment extends Fragment {
     private void drawClusters(final Collection<Cluster<GPSLocation>> clusters){
         final int[] colors = new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.CYAN, Color.WHITE};
         // TODO: For each cluster, draw a convex hull around the points in a sufficiently distinct color
-        for(Cluster a: clusters){
-            GPSLocation[] arr = new GPSLocation[a.size()];
-           // ArrayList pts = a.getPoints();
-           // for(int i = 0; i<a.size();i++){
-           //     arr[i] = new GPSLocation(pts.get(i));
-           // }
-            for(GPSLocation loc : a){
-                
+        Log.i("number of clusters", String.valueOf(clusters.size()));
+        int i =0;
+        for(Cluster a: clusters ){
+        Log.i("clusters are", String.valueOf(a.size()));}
+        for(Cluster<GPSLocation> a: clusters){
+
+            drawHullFromPoints(a.getPoints().toArray(new GPSLocation[a.size()]),colors[i]);
+            i++;
             }
-            drawHullFromPoints(pts,colors[1]);
+            if(i>colors.length) i =0;
+
         }
 
-    }
+
 
     /**
      * Here you will call your DBScan algorithm, with the given parameters. Then
@@ -392,9 +394,10 @@ public class LocationsFragment extends Fragment {
      */
     private void runDBScan(GPSLocation[] locations, float eps, int minPts){
         //TODO: Cluster the locations by calling DBScan.
-        DBScan scan = new DBScan(eps,minPts);
+        DBScan<GPSLocation> scan = new DBScan<GPSLocation>(eps,minPts);
         List z = Arrays.asList(locations);
        List x =  scan.cluster(z);
+        drawClusters(x);
     }
 
     /**
