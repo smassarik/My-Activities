@@ -171,10 +171,10 @@ public class PPGService extends SensorService implements PPGListener
     int bpm = 0;
     double redMax = 0.0,
            redMin = 10000.0,
-           maxtime = 0.0,
-           mintime = 0.0,
-           timeDiff = 0.0;
-    boolean flag = false;
+           maxTime = 0.0,
+           minTime = 0.0,
+           timeDiff = 0.0,
+           redDiff = 0.0;
     Filter mFilter = new Filter(3);
 
     @SuppressWarnings("deprecation")
@@ -190,48 +190,46 @@ public class PPGService extends SensorService implements PPGListener
         float[] filteredValues = mFilter.getFilteredValues((float) event.value);
         final long time = event.timestamp;
         final double filtered = (double) filteredValues[0];
-        mintime = mintime==0?time:mintime;
-        maxtime = maxtime==0?time:maxtime;
+        minTime = minTime==0?time:minTime;
+        maxTime = maxTime==0?time:maxTime;
         broadcastPPGReading(time, filtered);
-        Log.d("PPGSERVICE", "filtered: "+filtered);
-        if (filtered > redMax) {
-            redMax = filtered;
-//            oldtime = maxtime;
-            maxtime = time;
-            Log.d("PPGSERVICE","max found: "+redMax);
-//            flag = true;
-        }else if (filtered < redMin) {
+        Log.d("PPGSERVICE", "\nfiltered: "+filtered);
+//        Log.d("PPGSERVICE", "minTime: "+minTime);
+//        Log.d("PPGSERVICE", "maxTime: "+maxTime);
+        Log.d("PPGSERVICE", "redMin: "+redMin);
+        Log.d("PPGSERVICE", "redMax: "+redMax);
+        Log.d("PPGSERVICE", "timeDiff: "+timeDiff);
+
+        if (filtered < redMin) {
             redMin = filtered;
-//            oldtime = mintime;
-            mintime = time;
-            Log.d("PPGSERVICE","min found: "+redMin);
-//            flag = false;
+            minTime = time;
+            Log.d("PPGSERVICE","    min found: "+redMin);
+        } else if (filtered > redMax) {
+            redMax = filtered;
+            maxTime = time;
+            Log.d("PPGSERVICE","    max found: "+redMax);
         }
 
-        // timeDiff should be doubled because we are counting both peaks and troughs but
-        // for some reason the bpm appears more normal (~80 as opposed to ~40) without doing so
-//        double timeDiff = (flag)?(maxtime - oldtime)/1000:(mintime - oldtime)/1000;
-//        timeDiff = maxtime>mintime?maxtime-mintime:timeDiff;
-        timeDiff = maxtime-mintime;
+        timeDiff = maxTime - minTime;
+        redDiff = redMax - redMin;
         // example: timeDiff = .3;                                      example: bpm = 40
         // bpm = beats/60 sec                                           40 beats/60 sec; [(1/40)*40 beats / (1/40)*60 sec]
         // 1 beat/.3 sec; [(60/.3=200)*1 beat/(60/.3=200)*.3sec]        1 beat / (60/40=1.5) sec
         // bpm = 200beats/min                                           timeDiff = 1.5
-        Log.d("red diff",""+(redMax-redMin));
-        Log.d("time diff",""+timeDiff);
-        if ((redMax - redMin) > .3 && (redMax-redMin) < 6 ) {
-//            Log.d("asdf", ""+(redMax-redMin));
-//            if(oldtime != 0.0){
-                Log.d("timediff: ", ""+timeDiff);
+//        Log.d("red diff",""+(redMax-redMin));
+//        Log.d("time diff",""+timeDiff);
+        if ( timeDiff>1 && timeDiff<1500) {
+                Log.d("PPGSERVICE","        HEARTBEAT");
                 bpm = (int) (60/timeDiff);
                 redMax = 0.0;
                 redMin = 10000.0;
+                timeDiff = 0.0;
 
             broadcastPeak(time, redMax);
-//            oldtime = (flag)?maxtime:mintime;
-        }else if(timeDiff > 1.5){
-//            redMin = 10000.0;
-//            redMax = 0.0;
+        }else if(timeDiff>1500){
+            timeDiff = 0.0;
+            redMax = 0.0;
+            redMin = 10000.0;
         }
         broadcastBPM(bpm);
     }
