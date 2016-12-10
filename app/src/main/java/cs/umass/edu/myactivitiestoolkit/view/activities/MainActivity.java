@@ -1,10 +1,12 @@
 package cs.umass.edu.myactivitiestoolkit.view.activities;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v13.app.FragmentPagerAdapter;
@@ -14,7 +16,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+
+import com.microsoft.band.BandClient;
+import com.microsoft.band.BandClientManager;
+import com.microsoft.band.BandException;
+import com.microsoft.band.BandInfo;
+import com.microsoft.band.ConnectionState;
+import com.microsoft.band.sensors.HeartRateConsentListener;
+
+import java.lang.ref.WeakReference;
 
 import cs.umass.edu.myactivitiestoolkit.R;
 import cs.umass.edu.myactivitiestoolkit.constants.Constants;
@@ -24,6 +37,8 @@ import cs.umass.edu.myactivitiestoolkit.view.fragments.ExerciseFragment;
 import cs.umass.edu.myactivitiestoolkit.view.fragments.HeartRateFragment;
 import cs.umass.edu.myactivitiestoolkit.view.fragments.LocationsFragment;
 import cs.umass.edu.myactivitiestoolkit.view.fragments.SettingsFragment;
+
+import static com.microsoft.band.BandErrorType.UNSUPPORTED_SDK_VERSION_ERROR;
 
 /**
  * The main activity is the entry point for the application. It is the primary UI and allows
@@ -38,15 +53,23 @@ import cs.umass.edu.myactivitiestoolkit.view.fragments.SettingsFragment;
  * tab layout.
  *
  * @author Sean Noran
+
+
  */
 public class MainActivity extends AppCompatActivity {
+
+    private Button btnStart, btnConsent;
+
 
     @SuppressWarnings("unused")
     /** used for debugging purposes */
     private static final String TAG = MainActivity.class.getName();
+    private BandClient client = null;
+    final WeakReference<Activity> reference = new WeakReference<Activity>(this);
 
     /**
-     * Defines all available tabs in the main UI. For help on enums,
+     * Defines all available tabs in the main UI. For help
+     enums,
      * see the <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html">Java documentation</a>.
      *
      * Each enum constant is parameterized with the class of the fragment associated
@@ -183,6 +206,66 @@ public class MainActivity extends AppCompatActivity {
     /** Displays status messages, e.g. connection station. **/
     private TextView txtStatus;
 
+    private class HeartRateConsentTask extends AsyncTask<WeakReference<Activity>, Void, Void> {
+        @Override
+        protected Void doInBackground(WeakReference<Activity>... params) {
+            try {
+                if (getConnectedBandClient()) {
+
+                    if (params[0].get() != null) {
+                        client.getSensorManager().requestHeartRateConsent(params[0].get(), new HeartRateConsentListener() {
+                            @Override
+                            public void userAccepted(boolean consentGiven) {
+                            }
+                        });
+                    }
+                } else {
+                    showStatus("Band isn't connected. Please make sure bluetooth is on and the band is in range.\n");
+                }
+            } catch (BandException e) {
+                String exceptionMessage="";
+                switch (e.getErrorType()) {
+                    case UNSUPPORTED_SDK_VERSION_ERROR:
+                        exceptionMessage = "Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.\n";
+                        break;
+                    case SERVICE_ERROR:
+                        exceptionMessage = "Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.\n";
+                        break;
+                    default:
+                        exceptionMessage = "Unknown error occured: " + e.getMessage() + "\n";
+                        break;
+                }
+                showStatus(exceptionMessage);
+
+            } catch (Exception e) {
+                showStatus(e.getMessage());
+            }
+            return null;
+        }
+    }
+
+    private boolean getConnectedBandClient() throws InterruptedException, BandException {
+            Log.i("getConnectedBandClient","");
+        if (client == null) {
+            //Find paired bands
+            BandInfo[] devices = BandClientManager.getInstance().getPairedBands();
+            if (devices.length == 0) {
+                //No bands found...message to user
+                Log.i("band is not connected","");
+                return false;
+            }
+            //need to set client if there are devices
+            client = BandClientManager.getInstance().create(getBaseContext(), devices[0]);
+        } else if(ConnectionState.CONNECTED == client.getConnectionState()) {
+            Log.i("band is connected","");
+            return true;
+
+        }
+
+        //need to return connected status
+        return ConnectionState.CONNECTED == client.connect().await();
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -208,6 +291,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("onCreate start","");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -245,7 +329,9 @@ public class MainActivity extends AppCompatActivity {
         assert tabLayout != null;
         tabLayout.setupWithViewPager(viewPager);
 
-        txtStatus = (TextView) findViewById(R.id.status);
+        txtStatus = (TextView) findViewById(R.id.status); //set consent
+        btnConsent = (Button) findViewById(R.id.btnConsent);
+        btnStart = (Button) findViewById(R.id.btnConsent);
 
         // if the activity was started by clicking a notification, then the intent contains the
         // notification ID and can be used to set the proper tab.
@@ -266,6 +352,13 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+        btnConsent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("onClickListener","");
+                new HeartRateConsentTask().execute(reference);
+            }
+        });
     }
 
     @Override

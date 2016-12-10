@@ -1,7 +1,5 @@
 package cs.umass.edu.myactivitiestoolkit.services.msband;
 
-import android.app.Notification;
-import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
@@ -14,9 +12,10 @@ import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
 import com.microsoft.band.BandInfo;
 import com.microsoft.band.ConnectionState;
-import com.microsoft.band.sensors.BandAccelerometerEventListener;
 import com.microsoft.band.sensors.BandGyroscopeEvent;
 import com.microsoft.band.sensors.BandGyroscopeEventListener;
+import com.microsoft.band.sensors.BandHeartRateEvent;
+import com.microsoft.band.sensors.BandHeartRateEventListener;
 import com.microsoft.band.sensors.SampleRate;
 
 import cs.umass.edu.myactivitiestoolkit.R;
@@ -25,21 +24,12 @@ import cs.umass.edu.myactivitiestoolkit.services.SensorService;
 import edu.umass.cs.MHLClient.sensors.AccelerometerReading;
 import edu.umass.cs.MHLClient.sensors.GyroscopeReading;
 
-/**
- * The BandService is responsible for starting and stopping the sensors on the Band and receiving
- * accelerometer and gyroscope data periodically. It is a foreground service, so that the user
- * can close the application on the phone and continue to receive data from the wearable device.
- * Because the {@link BandGyroscopeEvent} also receives accelerometer readings, we only need to
- * register a {@link BandGyroscopeEventListener} and no {@link BandAccelerometerEventListener}.
- * This should be compatible with both the Microsoft Band and Microsoft Band 2.
- *
- * @author Sean Noran
- *
- * @see Service#startForeground(int, Notification)
- * @see BandClient
- * @see BandGyroscopeEventListener
- */
-public class BandService extends SensorService implements BandGyroscopeEventListener {
+/* @see Service#startForeground(int, Notification)
+        * @see BandClient
+        * @see BandGyroscopeEventListener
+        */
+
+public class BandService extends SensorService implements BandGyroscopeEventListener, BandHeartRateEventListener {
 
     /** used for debugging purposes */
     private static final String TAG = BandService.class.getName();
@@ -185,7 +175,11 @@ public class BandService extends SensorService implements BandGyroscopeEventList
         String sample = TextUtils.join(",", data);
         Log.d(TAG, sample);
     }
+    public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
 
+        HeartBeatReading heartBeatReading = new HeartBeatReading(mUserID, "", "", bandHeartRateEvent.getTimestamp(), bandHeartRateEvent.getHeartRate());
+        mClient.sendSensorReading(heartBeatReading);
+    }
     //TODO: Remove method from starter code
     /**
      * Broadcasts the accelerometer reading to other application components, e.g. the main UI.
