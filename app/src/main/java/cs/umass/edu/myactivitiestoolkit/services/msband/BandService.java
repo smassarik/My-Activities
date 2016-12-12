@@ -16,6 +16,8 @@ import com.microsoft.band.sensors.BandGyroscopeEvent;
 import com.microsoft.band.sensors.BandGyroscopeEventListener;
 import com.microsoft.band.sensors.BandHeartRateEvent;
 import com.microsoft.band.sensors.BandHeartRateEventListener;
+import com.microsoft.band.sensors.BandGsrEvent;
+import com.microsoft.band.sensors.BandGsrEventListener;
 import com.microsoft.band.sensors.SampleRate;
 
 import cs.umass.edu.myactivitiestoolkit.R;
@@ -23,13 +25,15 @@ import cs.umass.edu.myactivitiestoolkit.constants.Constants;
 import cs.umass.edu.myactivitiestoolkit.services.SensorService;
 import edu.umass.cs.MHLClient.sensors.AccelerometerReading;
 import edu.umass.cs.MHLClient.sensors.GyroscopeReading;
+import cs.umass.edu.myactivitiestoolkit.services.msband.GsrReading;
+import cs.umass.edu.myactivitiestoolkit.services.msband.HeartRateReading;
 
 /* @see Service#startForeground(int, Notification)
         * @see BandClient
         * @see BandGyroscopeEventListener
         */
 
-public class BandService extends SensorService implements BandGyroscopeEventListener, BandHeartRateEventListener {
+public class BandService extends SensorService implements BandGyroscopeEventListener, BandHeartRateEventListener, BandGsrEventListener {
 
     /** used for debugging purposes */
     private static final String TAG = BandService.class.getName();
@@ -64,6 +68,7 @@ public class BandService extends SensorService implements BandGyroscopeEventList
                 if (getConnectedBandClient()) {
                     broadcastStatus(getString(R.string.status_connected));
                     bandClient.getSensorManager().registerGyroscopeEventListener(BandService.this, SampleRate.MS16);
+                    bandClient.getSensorManager().registerGsrEventListener(BandService.this);
                 } else {
                     broadcastStatus(getString(R.string.status_not_connected));
                 }
@@ -177,8 +182,13 @@ public class BandService extends SensorService implements BandGyroscopeEventList
     }
     public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
 
-        HeartBeatReading heartBeatReading = new HeartBeatReading(mUserID, "", "", bandHeartRateEvent.getTimestamp(), bandHeartRateEvent.getHeartRate());
+        HeartRateReading heartBeatReading = new HeartRateReading(mUserID, "", "", bandHeartRateEvent.getTimestamp(), bandHeartRateEvent.getHeartRate());
         mClient.sendSensorReading(heartBeatReading);
+    }
+
+    public void onBandGsrChanged(BandGsrEvent event) {
+        GsrReading gsrReading = new GsrReading(mUserID, "", "", event.getTimestamp(), event.getResistance());
+        mClient.sendSensorReading(gsrReading);
     }
     //TODO: Remove method from starter code
     /**
