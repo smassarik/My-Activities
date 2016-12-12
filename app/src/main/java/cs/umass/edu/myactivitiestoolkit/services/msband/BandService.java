@@ -26,7 +26,9 @@ import cs.umass.edu.myactivitiestoolkit.services.SensorService;
 import edu.umass.cs.MHLClient.sensors.AccelerometerReading;
 import edu.umass.cs.MHLClient.sensors.GyroscopeReading;
 import cs.umass.edu.myactivitiestoolkit.services.msband.GsrReading;
+import cs.umass.edu.myactivitiestoolkit.services.msband.GsrDAO;
 import cs.umass.edu.myactivitiestoolkit.services.msband.HeartRateReading;
+import cs.umass.edu.myactivitiestoolkit.services.msband.HeartRateDAO;
 
 /* @see Service#startForeground(int, Notification)
         * @see BandClient
@@ -181,16 +183,22 @@ public class BandService extends SensorService implements BandGyroscopeEventList
         Log.d(TAG, sample);
     }
     public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
-
-        HeartRateReading heartBeatReading = new HeartRateReading(mUserID, "", "", bandHeartRateEvent.getTimestamp(), bandHeartRateEvent.getHeartRate());
-        mClient.sendSensorReading(heartBeatReading);
+        HeartRateReading heartRateReading = new HeartRateReading(bandHeartRateEvent.getTimestamp(), bandHeartRateEvent.getHeartRate());
+        HeartRateDAO dao = new HeartRateDAO(getApplicationContext());
+        dao.openWrite();
+        dao.insert(heartRateReading);
+        dao.close();
     }
 
     public void onBandGsrChanged(BandGsrEvent event) {
-        GsrReading gsrReading = new GsrReading(mUserID, "", "", event.getTimestamp(), event.getResistance());
-        mClient.sendSensorReading(gsrReading);
+        GsrReading gsrReading = new GsrReading(event.getTimestamp(), event.getResistance());
+        GsrDAO dao = new GsrDAO(getApplicationContext());
+        dao.openWrite();
+        dao.insert(gsrReading);
+        dao.close();
     }
-    //TODO: Remove method from starter code
+
+
     /**
      * Broadcasts the accelerometer reading to other application components, e.g. the main UI.
      * @param accelerometerReadings the x, y, and z accelerometer readings

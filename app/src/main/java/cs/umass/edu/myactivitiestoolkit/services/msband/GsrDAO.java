@@ -67,7 +67,7 @@ public class GsrDAO extends GeneralDAO {
     // QUERY IMPLEMENTATIONS
     // --------------------------------------------
 
-    public GsrReading getLocationById(int id) {
+    public GsrReading getResistanceById(int id) {
         Cursor c = db.query(
                 TABLE_NAME,
                 PROJECTION,
@@ -76,10 +76,10 @@ public class GsrDAO extends GeneralDAO {
                 null,
                 null,
                 null);
-        return cursor2location(c);
+        return cursor2resistance(c);
     }
 
-    public GsrReading[] getLocationByTimeRange(long startTime, long endTime) {
+    public GsrReading[] getResistanceByTimeRange(long startTime, long endTime) {
         Cursor c = db.query(
                 TABLE_NAME,
                 PROJECTION,
@@ -88,10 +88,10 @@ public class GsrDAO extends GeneralDAO {
                 null,
                 null,
                 null);
-        return cursor2locations(c);
+        return cursor2resistances(c);
     }
 
-    public GsrReading[] getAllLocations() {
+    public GsrReading[] getAllResistances() {
         Cursor c = db.query(
                 TABLE_NAME,
                 PROJECTION,
@@ -100,7 +100,7 @@ public class GsrDAO extends GeneralDAO {
                 null,
                 null,
                 CNAME_TIMESTAMP+" DESC");
-        return cursor2locations(c);
+        return cursor2resistances(c);
     }
 
     // --------------------------------------------
@@ -109,12 +109,12 @@ public class GsrDAO extends GeneralDAO {
 
 
     public void insert(GsrReading r) {
-        ContentValues cv = location2ContentValues(r);
+        ContentValues cv = resistance2ContentValues(r);
         db.insert(TABLE_NAME, null, cv);
     }
 
     public void update(GsrReading r) {
-        ContentValues values = location2ContentValues(r);
+        ContentValues values = resistance2ContentValues(r);
         db.update(TABLE_NAME, values , WHERE_ID, new String[]{r.id+""});
     }
 
@@ -132,34 +132,30 @@ public class GsrDAO extends GeneralDAO {
     // LOCATION-CURSOR TRANSFORMATION UTILITIES
     // --------------------------------------------
 
-    private static GsrReading cursor2location(Cursor c) {
+    private static GsrReading cursor2resistance(Cursor c) {
         c.moveToFirst();
         GsrReading r = new GsrReading();
         r.id = c.getInt(CNUM_ID);
         r.timestamp =c.getLong(CNUM_TIMESTAMP);
-        r.latitude = c.getDouble(CNUM_LATITUDE);
-        r.longitude = c.getDouble(CNUM_LONGITUDE);
-        r.accuracy = c.getFloat(CNUM_ACCURACY);
+        r.resistance = c.getDouble(CNUM_RESISTANCE);
         return r;
     }
 
-    public static GsrReading[] cursor2locations(Cursor c) {
+    public static GsrReading[] cursor2resistances(Cursor c) {
         c.moveToFirst();
-        LinkedList<GsrReading> locations = new LinkedList<GsrReading>();
+        LinkedList<GsrReading> resistances = new LinkedList<GsrReading>();
         while(!c.isAfterLast()){
             GsrReading r = new GsrReading();
             r.id = c.getInt(CNUM_ID);
             r.timestamp =c.getLong(CNUM_TIMESTAMP);
-            r.latitude = c.getDouble(CNUM_LATITUDE);
-            r.longitude = c.getDouble(CNUM_LONGITUDE);
-            r.accuracy = c.getFloat(CNUM_ACCURACY);
-            locations.add(r);
+            r.resistance = c.getDouble(CNUM_RESISTANCE);
+            resistances.add(r);
             c.moveToNext();
         }
-        return locations.toArray(new GsrReading[locations.size()]);
+        return resistances.toArray(new GsrReading[resistances.size()]);
     }
 
-    private static ContentValues gsr2ContentValues(GsrReading r) {
+    private static ContentValues resistance2ContentValues(GsrReading r) {
         ContentValues cv = new ContentValues();
         cv.put(CNAME_TIMESTAMP, r.timestamp);
         cv.put(CNAME_RESISTANCE, r.resistance);

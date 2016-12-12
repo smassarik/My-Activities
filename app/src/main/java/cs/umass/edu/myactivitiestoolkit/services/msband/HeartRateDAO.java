@@ -22,30 +22,30 @@ public class HeartRateDAO extends GeneralDAO {
     // SCHEMA
     // --------------------------------------------
 
-    public static String TABLE_NAME = "gsrreports";
+    public static String TABLE_NAME = "heartratereports";
 
     public static final String TAG = "HeartRateDAO";
 
     public static final String CNAME_ID = "_id";
     public static final String CNAME_TIMESTAMP = "timestamp";
-    public static final String CNAME_RESISTANCE = "resistance";
+    public static final String CNAME_HEARTRATE = "heartrate";
 
 
     public static final String[] PROJECTION = {
             CNAME_ID,
             CNAME_TIMESTAMP,
-            CNAME_RESISTANCE
+            CNAME_HEARTRATE
     };
 
     public final static int CNUM_ID = 0;
     public final static int CNUM_TIMESTAMP = 1;
-    public final static int CNUM_RESISTANCE = 2;
+    public final static int CNUM_HEARTRATE = 2;
 
 
     public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " (" +
             CNAME_ID + " INTEGER PRIMARY KEY, " +
             CNAME_TIMESTAMP + " LONG, " +
-            CNAME_RESISTANCE + " REAL, " +
+            CNAME_HEARTRATE + " REAL, " +
             ");";
 
     // --------------------------------------------
@@ -67,7 +67,7 @@ public class HeartRateDAO extends GeneralDAO {
     // QUERY IMPLEMENTATIONS
     // --------------------------------------------
 
-    public HeartRateReading getLocationById(int id) {
+    public HeartRateReading getHeartRateById(int id) {
         Cursor c = db.query(
                 TABLE_NAME,
                 PROJECTION,
@@ -76,10 +76,10 @@ public class HeartRateDAO extends GeneralDAO {
                 null,
                 null,
                 null);
-        return cursor2location(c);
+        return cursor2heartrate(c);
     }
 
-    public HeartRateReading[] getLocationByTimeRange(long startTime, long endTime) {
+    public HeartRateReading[] getHeartRateByTimeRange(long startTime, long endTime) {
         Cursor c = db.query(
                 TABLE_NAME,
                 PROJECTION,
@@ -88,10 +88,10 @@ public class HeartRateDAO extends GeneralDAO {
                 null,
                 null,
                 null);
-        return cursor2locations(c);
+        return cursor2heartrates(c);
     }
 
-    public HeartRateReading[] getAllLocations() {
+    public HeartRateReading[] getAllHeartRates() {
         Cursor c = db.query(
                 TABLE_NAME,
                 PROJECTION,
@@ -100,7 +100,7 @@ public class HeartRateDAO extends GeneralDAO {
                 null,
                 null,
                 CNAME_TIMESTAMP+" DESC");
-        return cursor2locations(c);
+        return cursor2heartrates(c);
     }
 
     // --------------------------------------------
@@ -109,12 +109,12 @@ public class HeartRateDAO extends GeneralDAO {
 
 
     public void insert(HeartRateReading r) {
-        ContentValues cv = location2ContentValues(r);
+        ContentValues cv = heartrate2ContentValues(r);
         db.insert(TABLE_NAME, null, cv);
     }
 
     public void update(HeartRateReading r) {
-        ContentValues values = location2ContentValues(r);
+        ContentValues values = heartrate2ContentValues(r);
         db.update(TABLE_NAME, values , WHERE_ID, new String[]{r.id+""});
     }
 
@@ -129,42 +129,36 @@ public class HeartRateDAO extends GeneralDAO {
     }
 
     // --------------------------------------------
-    // LOCATION-CURSOR TRANSFORMATION UTILITIES
+    // HEARTRATE-CURSOR TRANSFORMATION UTILITIES
     // --------------------------------------------
 
-    private static HeartRateReading cursor2location(Cursor c) {
+    private static HeartRateReading cursor2heartrate(Cursor c) {
         c.moveToFirst();
         HeartRateReading r = new HeartRateReading();
         r.id = c.getInt(CNUM_ID);
         r.timestamp =c.getLong(CNUM_TIMESTAMP);
-        r.latitude = c.getDouble(CNUM_LATITUDE);
-        r.longitude = c.getDouble(CNUM_LONGITUDE);
-        r.accuracy = c.getFloat(CNUM_ACCURACY);
+        r.heartRate = c.getDouble(CNUM_HEARTRATE);
         return r;
     }
 
-    public static HeartRateReading[] cursor2locations(Cursor c) {
+    public static HeartRateReading[] cursor2heartrates(Cursor c) {
         c.moveToFirst();
-        LinkedList<HeartRateReading> locations = new LinkedList<HeartRateReading>();
+        LinkedList<HeartRateReading> heartrates = new LinkedList<HeartRateReading>();
         while(!c.isAfterLast()){
             HeartRateReading r = new HeartRateReading();
             r.id = c.getInt(CNUM_ID);
             r.timestamp =c.getLong(CNUM_TIMESTAMP);
-            r.latitude = c.getDouble(CNUM_LATITUDE);
-            r.longitude = c.getDouble(CNUM_LONGITUDE);
-            r.accuracy = c.getFloat(CNUM_ACCURACY);
-            locations.add(r);
+            r.heartRate = c.getDouble(CNUM_HEARTRATE);
+            heartrates.add(r);
             c.moveToNext();
         }
-        return locations.toArray(new HeartRateReading[locations.size()]);
+        return heartrates.toArray(new HeartRateReading[heartrates.size()]);
     }
 
-    private static ContentValues location2ContentValues(HeartRateReading r) {
+    private static ContentValues heartrate2ContentValues(HeartRateReading r) {
         ContentValues cv = new ContentValues();
         cv.put(CNAME_TIMESTAMP, r.timestamp);
-        cv.put(CNAME_LATITUDE, r.latitude);
-        cv.put(CNAME_LONGITUDE, r.longitude);
-        cv.put(CNAME_ACCURACY, r.accuracy);
+        cv.put(CNAME_HEARTRATE, r.heartRate);
         return cv;
     }
 
