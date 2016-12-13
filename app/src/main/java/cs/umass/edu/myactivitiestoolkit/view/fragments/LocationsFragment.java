@@ -61,6 +61,10 @@ import cs.umass.edu.myactivitiestoolkit.location.LocationDAO;
 import cs.umass.edu.myactivitiestoolkit.services.AccelerometerService;
 import cs.umass.edu.myactivitiestoolkit.services.LocationService;
 import cs.umass.edu.myactivitiestoolkit.services.ServiceManager;
+import cs.umass.edu.myactivitiestoolkit.services.msband.GsrDAO;
+import cs.umass.edu.myactivitiestoolkit.services.msband.GsrReading;
+import cs.umass.edu.myactivitiestoolkit.services.msband.HeartRateDAO;
+import cs.umass.edu.myactivitiestoolkit.services.msband.HeartRateReading;
 import cs.umass.edu.myactivitiestoolkit.util.PermissionsUtil;
 import edu.umass.cs.MHLClient.client.MessageReceiver;
 import edu.umass.cs.MHLClient.client.MobileIOClient;
@@ -81,9 +85,6 @@ import edu.umass.cs.MHLClient.client.MobileIOClient;
  * </ol>
  *
  * <br><br>
- * In this file, you will be implementing {@link #runDBScan(GPSLocation[], float, int)},
- * {@link #runKMeans(GPSLocation[], int)}, {@link #runMeanShift(GPSLocation[])} and
- * {@link #drawClusters(Collection)}.
  *
  * @author CS390MB
  *
@@ -101,43 +102,30 @@ public class LocationsFragment extends Fragment {
     @SuppressWarnings("unused")
     /** Used during debugging to identify logs by class */
     private static final String TAG = LocationsFragment.class.getName();
-
     /** Request code required for obtaining location permission. **/
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 4;
-
     /** The view which contains the {@link #map} **/
     MapView mapView;
-
     /** The map object. **/
     private GoogleMap map;
-
     /** The list of visual map markers representing saved locations. */
     private final List<Marker> locationMarkers;
-
     /** The list of visual map markers representing cluster centers. */
     private final List<Marker> clusterMarkers;
-
     /** Indicates whether map markers, excluding cluster centers, should be displayed. **/
     private boolean hideMarkers = false;
-
     /** The location services icon which functions as a button to toggle the {@link LocationService}. **/
     private View btnToggleLocationService;
-
     /** Allows the user to define the epsilon parameter for DBScan. **/
     private EditText txtEps;
-
     /** Allows the user to define the minimum points parameter for DBScan. **/
     private EditText txtMinPts;
-
     /** Allows the user to define the number of clusters for k-means clustering. **/
     private EditText txtKClusters;
-
     /** Reference to the service manager which communicates to the {@link LocationService}. **/
     private ServiceManager serviceManager;
-
     /** Responsible for communicating with the data collection server. */
     protected MobileIOClient client;
-
     /** The user ID required to authenticate the server connection. */
     protected String userID;
 
@@ -216,19 +204,20 @@ public class LocationsFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap mMap) {
                 LocationsFragment.this.map = mMap;
             }
         });
-
         View btnUpdate = rootView.findViewById(R.id.btnUpdateMap);
         btnUpdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 GPSLocation[] locations = getSavedLocations();
+                HeartRateReading[] heartrates = getSavedHeartRates();
+                GsrReading[] resistances = getSavedResistances();
+
                 if (locations.length == 0){
                     Toast.makeText(getActivity(), "No locations to cluster.", Toast.LENGTH_LONG).show();
                     return;
@@ -248,20 +237,19 @@ public class LocationsFragment extends Fragment {
                     case R.id.radioButtonDBScan:
                         float eps = Float.parseFloat(txtEps.getText().toString());
                         int minPts = Integer.parseInt(txtMinPts.getText().toString());
-                        runDBScan(locations, eps, minPts);
+                        runDBScan(locations, resistances, heartrates, eps, minPts);
                         break;
                     case R.id.radioButtonKMeans:
                         int k = Integer.parseInt(txtKClusters.getText().toString());
-                        runKMeans(locations, k);
+                        runKMeans(locations, resistances, heartrates, k);
                         break;
                     case R.id.radioButtonMeanShift:
-                        runMeanShift(locations);
+                        runMeanShift(locations, resistances, heartrates);
                         break;
                 }
                 zoomInOnMarkers(100); // zoom to clusters automatically
             }
         });
-
         View btnSettings = rootView.findViewById(R.id.btnMapsSettings);
         btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -287,7 +275,6 @@ public class LocationsFragment extends Fragment {
                 });
             }
         });
-
         btnToggleLocationService = rootView.findViewById(R.id.btnToggleLocation);
         if (serviceManager.isServiceRunning(LocationService.class)) {
             btnToggleLocationService.setBackgroundResource(R.drawable.ic_location_on_black_48dp);
@@ -304,7 +291,6 @@ public class LocationsFragment extends Fragment {
                 }
             }
         });
-
         return rootView;
     }
 
@@ -353,6 +339,26 @@ public class LocationsFragment extends Fragment {
         }
     }
 
+    private HeartRateReading[] getSavedHeartRates(){
+        HeartRateDAO dao = new HeartRateDAO(getActivity());
+        try {
+            dao.openRead();
+            return dao.getAllHeartRates();
+        } finally {
+            dao.close();
+        }
+    }
+
+    private GsrReading[] getSavedResistances(){
+        GsrDAO dao = new GsrDAO(getActivity());
+        try {
+            dao.openRead();
+            return dao.getAllResistances();
+        } finally {
+            dao.close();
+        }
+    }
+
     /**
      * Here you should draw clusters on the map. We have given you {@link #drawHullFromPoints(GPSLocation[], int)},
      * which draws a convex hull around the specified points, in the given color. For each cluster,
@@ -367,56 +373,66 @@ public class LocationsFragment extends Fragment {
      * you may go above and beyond and account for the spherical nature of the earth.
      * See <a href="http://www.geomidpoint.com/calculation.html">geomidpoint.com</a> for details.
      */
-    private void drawClusters(final Collection<Cluster<GPSLocation>> clusters){
+    private void drawClusters(final Collection<Cluster<GPSLocation>> clusters, final Collection<GsrReading> resistances, final Collection<HeartRateReading> heartrates){
+
         final int[] colors = new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.CYAN, Color.WHITE};
-        // TODO: For each cluster, draw a convex hull around the points in a sufficiently distinct color
         Log.i("number of clusters", String.valueOf(clusters.size()));
         int i =0;
         for(Cluster a: clusters ){
         Log.i("clusters are", String.valueOf(a.size()));}
         for(Cluster<GPSLocation> a: clusters){
-
-            drawHullFromPoints(a.getPoints().toArray(new GPSLocation[a.size()]),colors[i]);
+            GPSLocation[] pts = a.getPoints().toArray(new GPSLocation[a.size()]);
+            GsrReading[] gsrs = getClusterResistances(pts, resistances);
+            HeartRateReading[] hrs = getClusterHeartrates(pts, heartrates);
+            final int color = Color.argb(computeStressRating(hrs, gsrs), 255, 0, 0);
+            drawHullFromPoints(pts,color);
             i++;
             }
             if(i>colors.length) i =0;
-
         }
 
 
-
-    /**
-     * Here you will call your DBScan algorithm, with the given parameters. Then
-     * call {@link #drawClusters(Collection)} in order to visualize your output.
-     * @param locations the list of locations to be clustered.
-     * @param eps the neighborhood radius parameter.
-     * @param minPts the minimum number of points in a neighborhood.
-     */
-    private void runDBScan(GPSLocation[] locations, float eps, int minPts){
-        //TODO: Cluster the locations by calling DBScan.
-        DBScan<GPSLocation> scan = new DBScan<GPSLocation>(eps,minPts);
-        List z = Arrays.asList(locations);
-       List x =  scan.cluster(z);
-        drawClusters(x);
+    // The locations in each call of getClusterResistances and getClusterHeartrates
+    // correspond to all of the locations comprising a cluster. Grab timestamp from
+    // each location and query the appropriate DAO table for the two resistance/heartrate
+    // entries that occurred before and after this timestamp. Add this to the array
+    private GsrReading[] getClusterResistances(GPSLocation[] locations, Collection<GsrReading> resistances){
+        // TODO
+        return null;
     }
 
-    /**
-     * Here you will request to cluster your n locations using k-means clustering. We have
-     * registered a listener for you and have parsed the JSON string that comes back
-     * from the server. The result is a list of n integers associating each location with
-     * one of the k clusters. Generate a list of k clusters and then call {@link #drawClusters(Collection)},
-     * passing in the list of clusters.
-     * <br><br>
-     * One way you may do this is by using a map. We've provided one for you if you would like
-     * to do it this way. Each cluster index should be associated with a cluster. If it is not yet,
-     * then instantiate a new cluster and add the association to the map. If it's already associated
-     * with a cluster, then all you need to do it update that cluster with the current GPS location
-     * in the loop iteration.
-     *
-     * @param locations the list of locations to be clustered.
-     * @param k the number of clusters.
-     */
-    private void runKMeans(final GPSLocation[] locations, final int k){
+    private HeartRateReading[] getClusterHeartrates(GPSLocation[] locations, Collection<HeartRateReading> heartrates) {
+        // TODO
+        return null;
+    }
+
+    private void drawHullFromPoints(GPSLocation[] locations, int color){
+        if (locations.length <= 2) return;
+        ArrayList<GPSLocation> hull = FastConvexHull.execute(locations);
+        PolygonOptions options = new PolygonOptions();
+        for(GPSLocation loc : hull){
+            options.add(new LatLng(loc.latitude,loc.longitude));
+        }
+        options = options.strokeColor(Color.RED).fillColor(color);
+        map.addPolygon(options); // draw a polygon
+    }
+
+    private int computeStressRating(HeartRateReading[] heartrates, GsrReading[] resistances){
+        // TODO: compute some composite value [0,255] representing stress from
+        // heartrates and resistances that will correspond to the fill color's alpha
+        return 0;
+    }
+
+    private void runDBScan(GPSLocation[] locations, GsrReading[] resistances, HeartRateReading[] heartrates, float eps, int minPts){
+        DBScan<GPSLocation> scan = new DBScan<GPSLocation>(eps,minPts);
+        List z = Arrays.asList(locations);
+        List x =  scan.cluster(z);
+        List gsr = Arrays.asList(resistances);
+        List hr = Arrays.asList(heartrates);
+        drawClusters(x, gsr, hr);
+    }
+
+    private void runKMeans(final GPSLocation[] locations, final GsrReading[] resistances, final HeartRateReading[] heartrates, final int k){
         client.registerMessageReceiver(new MessageReceiver() {
             @Override
             protected void onMessageReceived(JSONObject json) {
@@ -434,8 +450,8 @@ public class LocationsFragment extends Fragment {
 
                     for (int i = 0; i < indexes.length; i++) {
                         int index = indexes[i];
-                        //TODO: Using the index of each location, generate a list of k clusters, then call drawClusters().
-                        //You may choose to use the Map defined above or find a different way of doing it.
+                        // Using the index of each location, generate a list of k clusters, then call drawClusters().
+                        // You may choose to use the Map defined above or find a different way of doing it.
                         // For example, if we send over points A, B, C, D, E and F and the clustering algorithm
                         // groups A and D into cluster 0, B, E and F into cluster 1, and C into cluster 2, then
                         // the resulting array of indexes will be [0,1,2,0,1,1].
@@ -449,12 +465,13 @@ public class LocationsFragment extends Fragment {
                             clusters.put(index, c);
                         }
                     }
-
+                    final List kmeans_gsr = Arrays.asList(resistances);
+                    final List kmeans_hr = Arrays.asList(heartrates);
                     // We are only allowed to manipulate the map on the main (UI) thread:
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            drawClusters(clusters.values());
+                            drawClusters(clusters.values(), kmeans_gsr, kmeans_hr);
                         }
                     });
 
@@ -469,19 +486,7 @@ public class LocationsFragment extends Fragment {
         client.sendSensorReading(new ClusteringRequest(userID, "", "", System.currentTimeMillis(), locations, "k_means", k));
     }
 
-    /**
-     * Here you will request to cluster your n locations using mean-shift clustering. We have
-     * registered a listener for you and have parsed the JSON string that comes back
-     * from the server. The result is a list of n integers associating each location with
-     * one of the an arbitrary number of clusters. Generate a list of clusters and then
-     * call {@link #drawClusters(Collection)}, passing in the list of clusters.
-     * <br><br>
-     * You may do this the same way you did for k-means. The only difference is that we do not
-     * know the number of clusters ahead of time, but that shouldn't be a problem.
-     *
-     * @param locations the list of locations to be clustered.
-     */
-    private void runMeanShift(final GPSLocation[] locations){
+    private void runMeanShift(final GPSLocation[] locations, final GsrReading[] resistances, final HeartRateReading[] heartrates){
         client.registerMessageReceiver(new MessageReceiver() {
             @Override
             protected void onMessageReceived(JSONObject json) {
@@ -495,12 +500,10 @@ public class LocationsFragment extends Fragment {
                     for (int i = 0; i < indexList.length; i++){
                         indexes[i] = Integer.parseInt(indexList[i].replace("\"", "").trim());
                     }
-
-
+                    final List gsr = Arrays.asList(resistances);
+                    final List hr = Arrays.asList(heartrates);
                     for (int i = 0; i < indexes.length; i++) {
                         int index = indexes[i];
-                        //TODO: Using the index of each location, generate clusters, then call drawClusters().
-                        //You may choose to use the Map defined above or find a different way of doing it.
                         if(clusters.get(index) == null){
                             Cluster c = new Cluster();
                             c.addPoint(locations[i]);
@@ -511,15 +514,15 @@ public class LocationsFragment extends Fragment {
                             clusters.put(index, c);
                         }
                     }
-
+                    final List meanshift_gsr = Arrays.asList(resistances);
+                    final List meanshift_hr = Arrays.asList(heartrates);
                     // We are only allowed to manipulate the map on the main (UI) thread:
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            drawClusters(clusters.values());
+                            drawClusters(clusters.values(), meanshift_gsr, meanshift_hr);
                         }
                     });
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } finally {
@@ -549,21 +552,6 @@ public class LocationsFragment extends Fragment {
         LatLngBounds bounds = builder.build();
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         map.animateCamera(cu);
-    }
-
-    /**
-     * Draws a convex hull around a set of points - this will be great for visualizing clusters
-     * @param locations the set of locations contained in the convex hull
-     */
-    private void drawHullFromPoints(GPSLocation[] locations, int color){
-        if (locations.length <= 2) return;
-        ArrayList<GPSLocation> hull = FastConvexHull.execute(locations);
-        PolygonOptions options = new PolygonOptions();
-        for(GPSLocation loc : hull){
-            options.add(new LatLng(loc.latitude,loc.longitude));
-        }
-        options = options.strokeColor(color).fillColor(color);
-        map.addPolygon(options); // draw a polygon
     }
 
     /**
@@ -641,10 +629,8 @@ public class LocationsFragment extends Fragment {
                     if (grantResults[i] != PackageManager.PERMISSION_GRANTED){
                         switch (permissions[i]) {
                             case Manifest.permission.ACCESS_COARSE_LOCATION:
-                                //TODO: Show status
                                 return;
                             case Manifest.permission.ACCESS_FINE_LOCATION:
-                                //TODO: Show status
                                 return;
                             default:
                                 return;
