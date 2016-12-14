@@ -420,6 +420,19 @@ public class LocationsFragment extends Fragment {
     private int computeStressRating(HeartRateReading[] heartrates, GsrReading[] resistances){
         // TODO: compute some composite value [0,255] representing stress from
         // heartrates and resistances that will correspond to the fill color's alpha
+
+        double unstressed_hr = 80.0, stressed_hr = 150.0,
+               unstressed_gsr = 0.0, stressed_gsr = 100.0,
+               hrsum = 0.0, gsrsum = 0.0, hravg = 0.0, gsravg = 0.0;
+        for(int i = 0; i < heartrates.length; i++) {
+            hrsum += heartrates[i].heartRate;
+        }
+        for(int i = 0; i < resistances.length; i++) {
+            gsrsum += resistances[i].resistance;
+        }
+        hravg = hrsum / heartrates.length;
+        gsravg = gsrsum / resistances.length;
+
         return 0;
     }
 
