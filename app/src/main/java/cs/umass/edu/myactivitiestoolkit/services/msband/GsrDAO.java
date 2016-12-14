@@ -45,7 +45,7 @@ public class GsrDAO extends GeneralDAO {
     public static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME + " (" +
             CNAME_ID + " INTEGER PRIMARY KEY, " +
             CNAME_TIMESTAMP + " LONG, " +
-            CNAME_RESISTANCE + " REAL, " +
+            CNAME_RESISTANCE + " REAL " +
             ");";
 
     // --------------------------------------------
