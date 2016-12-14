@@ -26,6 +26,8 @@ import com.microsoft.band.BandException;
 import com.microsoft.band.BandInfo;
 import com.microsoft.band.ConnectionState;
 import com.microsoft.band.sensors.HeartRateConsentListener;
+import com.microsoft.band.sensors.BandGsrEvent;
+import com.microsoft.band.sensors.BandGsrEventListener;
 
 import java.lang.ref.WeakReference;
 
@@ -357,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.i("onClickListener","");
                 new HeartRateConsentTask().execute(reference);
+
             }
         });
     }
