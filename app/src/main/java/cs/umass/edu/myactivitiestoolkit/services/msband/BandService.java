@@ -71,6 +71,7 @@ public class BandService extends SensorService implements BandGyroscopeEventList
                     broadcastStatus(getString(R.string.status_connected));
                     bandClient.getSensorManager().registerGyroscopeEventListener(BandService.this, SampleRate.MS16);
                     bandClient.getSensorManager().registerGsrEventListener(BandService.this);
+                    bandClient.getSensorManager().registerHeartRateEventListener(BandService.this);
                 } else {
                     broadcastStatus(getString(R.string.status_not_connected));
                 }
@@ -121,7 +122,9 @@ public class BandService extends SensorService implements BandGyroscopeEventList
 
     @Override
     protected void registerSensors() {
+        
         new SensorSubscriptionTask().execute();
+
     }
 
     /**
