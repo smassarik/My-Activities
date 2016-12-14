@@ -107,10 +107,6 @@ public class HeartRateDAO extends GeneralDAO {
     // UPDATES
     // --------------------------------------------
 
-    public void create(){
-        db.execSQL(TABLE_CREATE);
-    }
-
     public void insert(HeartRateReading r) {
         ContentValues cv = heartrate2ContentValues(r);
         db.insert(TABLE_NAME, null, cv);

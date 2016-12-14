@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import cs.umass.edu.myactivitiestoolkit.location.LocationDAO;
+import cs.umass.edu.myactivitiestoolkit.services.msband.GsrDAO;
+import cs.umass.edu.myactivitiestoolkit.services.msband.HeartRateDAO;
 import cs.umass.edu.myactivitiestoolkit.storage.GeneralDAO;
 
 /**
@@ -32,6 +34,8 @@ public class MyDBHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(LocationDAO.TABLE_CREATE);
+		db.execSQL(HeartRateDAO.TABLE_CREATE);
+		db.execSQL(GsrDAO.TABLE_CREATE);
 		Log.d(TAG,"table " + LocationDAO.TABLE_NAME + " was created");
 
 				

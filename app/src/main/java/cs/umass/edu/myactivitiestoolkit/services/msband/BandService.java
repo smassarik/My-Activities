@@ -45,10 +45,6 @@ public class BandService extends SensorService implements BandGyroscopeEventList
 
     @Override
     protected void onServiceStarted() {
-        HeartRateDAO hrdao = new HeartRateDAO(getApplicationContext());
-        GsrDAO gsrdao = new GsrDAO(getApplicationContext());
-        hrdao.create();
-        gsrdao.create();
         broadcastMessage(Constants.MESSAGE.BAND_SERVICE_STARTED);
     }
 
