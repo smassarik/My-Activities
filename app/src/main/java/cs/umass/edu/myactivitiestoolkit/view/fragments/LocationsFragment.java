@@ -129,7 +129,7 @@ public class LocationsFragment extends Fragment {
     protected MobileIOClient client;
     /** The user ID required to authenticate the server connection. */
     protected String userID;
-
+    private final double hrmax, gsrmax;
     /**
      * We listen for text input, so that we can decide how the UI is modified when the keyboard appears.
      */
@@ -425,6 +425,8 @@ public class LocationsFragment extends Fragment {
                     // case: most recent location is more recent than most recent gsr
                     HeartRateReading previous = heartrates[j-1];
                     HeartRateReading next = heartrates[j];
+
+                    // if either occurs within 15 minutes of location event, add it
                     if(locations[i].timestamp - previous.timestamp > 900000) {
                         hrList.add(previous);
                     }
@@ -448,13 +450,28 @@ public class LocationsFragment extends Fragment {
         map.addPolygon(options); // draw a polygon
     }
 
+    private double getMaxHeartrate(HeartRateReading[] heartrates) {
+        double max = heartrates[0].heartRate;
+        for(int i = 1; i < heartrates.length; i++) {
+            if (heartrates[i].heartRate > max) max = heartrates[i].heartRate;
+        }
+        return max;
+    }
+
+    private double getMaxGsr(GsrReading[] resistances) {
+        double max = resistances[0].resistance;
+        for(int i = 1; i < resistances.length; i++) {
+            if (resistances[i].resistance > max) max = resistances[i].resistance;
+        }
+        return max;
+    }
+
     private int computeStressRating(HeartRateReading[] heartrates, GsrReading[] resistances){
         // TODO: compute some composite value [0,255] representing stress from
         // heartrates and resistances that will correspond to the fill color's alpha
 
-        double unstressed_hr = 80.0, stressed_hr = 150.0,
-               unstressed_gsr = 0.0, stressed_gsr = 100.0,
-               hrsum = 0.0, gsrsum = 0.0, hravg = 0.0, gsravg = 0.0;
+        double max_hr = getMaxHeartrate(heartrates), max_gsr = getMaxGsr(resistances),
+               hrsum = 0.0, gsrsum = 0.0, hravg = 0.0, gsravg = 0.0, hrstress, gsrstress;
         for(int i = 0; i < heartrates.length; i++) {
             hrsum += heartrates[i].heartRate;
         }
@@ -464,7 +481,10 @@ public class LocationsFragment extends Fragment {
         hravg = hrsum / heartrates.length;
         gsravg = gsrsum / resistances.length;
 
-        return 0;
+        hrstress = (hravg / max_hr) * 255;
+        gsrstress = (gsravg / max_gsr) * 255;
+        
+        return (int)((0.4 * hrstress) + (0.6 * gsrstress));
     }
 
     private void runDBScan(GPSLocation[] locations, GsrReading[] resistances, HeartRateReading[] heartrates, float eps, int minPts){
