@@ -107,6 +107,9 @@ public class HeartRateDAO extends GeneralDAO {
     // UPDATES
     // --------------------------------------------
 
+    public void create(){
+        db.execSQL(TABLE_CREATE);
+    }
 
     public void insert(HeartRateReading r) {
         ContentValues cv = heartrate2ContentValues(r);
@@ -147,7 +150,7 @@ public class HeartRateDAO extends GeneralDAO {
         while(!c.isAfterLast()){
             HeartRateReading r = new HeartRateReading();
             r.id = c.getInt(CNUM_ID);
-            r.timestamp =c.getLong(CNUM_TIMESTAMP);
+            r.timestamp = c.getLong(CNUM_TIMESTAMP);
             r.heartRate = c.getDouble(CNUM_HEARTRATE);
             heartrates.add(r);
             c.moveToNext();

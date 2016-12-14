@@ -67,6 +67,10 @@ public class GsrDAO extends GeneralDAO {
     // QUERY IMPLEMENTATIONS
     // --------------------------------------------
 
+    public void create(){
+        db.execSQL(TABLE_CREATE);
+    }
+
     public GsrReading getResistanceById(int id) {
         Cursor c = db.query(
                 TABLE_NAME,

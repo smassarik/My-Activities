@@ -31,7 +31,6 @@ public class LocationDAO extends GeneralDAO {
 	public static final String CNAME_LATITUDE = "latitude";
 	public static final String CNAME_LONGITUDE = "longitude";
 	public static final String CNAME_ACCURACY = "accuracy";
-	
 
 	public static final String[] PROJECTION = {
 		CNAME_ID,
