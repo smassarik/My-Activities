@@ -129,7 +129,6 @@ public class LocationsFragment extends Fragment {
     protected MobileIOClient client;
     /** The user ID required to authenticate the server connection. */
     protected String userID;
-    private final double hrmax, gsrmax;
     /**
      * We listen for text input, so that we can decide how the UI is modified when the keyboard appears.
      */
@@ -483,7 +482,7 @@ public class LocationsFragment extends Fragment {
 
         hrstress = (hravg / max_hr) * 255;
         gsrstress = (gsravg / max_gsr) * 255;
-        
+
         return (int)((0.4 * hrstress) + (0.6 * gsrstress));
     }
 
