@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 import cs.umass.edu.myactivitiestoolkit.R;
 import cs.umass.edu.myactivitiestoolkit.clustering.Cluster;
@@ -373,7 +374,7 @@ public class LocationsFragment extends Fragment {
      * you may go above and beyond and account for the spherical nature of the earth.
      * See <a href="http://www.geomidpoint.com/calculation.html">geomidpoint.com</a> for details.
      */
-    private void drawClusters(final Collection<Cluster<GPSLocation>> clusters, final Collection<GsrReading> resistances, final Collection<HeartRateReading> heartrates){
+    private void drawClusters(final Collection<Cluster<GPSLocation>> clusters, final GsrReading[] resistances, final HeartRateReading[] heartrates){
 
         final int[] colors = new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.CYAN, Color.WHITE};
         Log.i("number of clusters", String.valueOf(clusters.size()));
@@ -389,21 +390,51 @@ public class LocationsFragment extends Fragment {
             i++;
             }
             if(i>colors.length) i =0;
-        }
+    }
 
 
     // The locations in each call of getClusterResistances and getClusterHeartrates
     // correspond to all of the locations comprising a cluster. Grab timestamp from
-    // each location and query the appropriate DAO table for the two resistance/heartrate
-    // entries that occurred before and after this timestamp. Add this to the array
-    private GsrReading[] getClusterResistances(GPSLocation[] locations, Collection<GsrReading> resistances){
-        // TODO
-        return null;
+    // each location and find the two corresponding resistance/heartrate
+    // entries that occurred before and after this timestamp. If the event
+    private GsrReading[] getClusterResistances(GPSLocation[] locations, GsrReading[] resistances){
+        HashSet<GsrReading> gsrList = new HashSet<GsrReading>();
+        for(int i = 0; i < locations.length; i++) {
+            for(int j = 0; j < resistances.length; j++) {
+                if(locations[i].timestamp > resistances[j].timestamp && j > 0) {
+                    // case: most recent location is more recent than most recent gsr
+                    GsrReading previous = resistances[j-1];
+                    GsrReading next = resistances[j];
+                    if(locations[i].timestamp - previous.timestamp > 900000) {
+                        gsrList.add(previous);
+                    }
+                    if(next.timestamp - locations[i].timestamp > 900000) {
+                        gsrList.add(next);
+                    }
+                }
+            }
+        }
+        return gsrList.toArray(new GsrReading[gsrList.size()]);
     }
 
-    private HeartRateReading[] getClusterHeartrates(GPSLocation[] locations, Collection<HeartRateReading> heartrates) {
-        // TODO
-        return null;
+    private HeartRateReading[] getClusterHeartrates(GPSLocation[] locations, HeartRateReading[] heartrates) {
+        HashSet<HeartRateReading> hrList = new HashSet<HeartRateReading>();
+        for(int i = 0; i < locations.length; i++) {
+            for(int j = 0; j < heartrates.length; j++) {
+                if(locations[i].timestamp > heartrates[j].timestamp && j > 0) {
+                    // case: most recent location is more recent than most recent gsr
+                    HeartRateReading previous = heartrates[j-1];
+                    HeartRateReading next = heartrates[j];
+                    if(locations[i].timestamp - previous.timestamp > 900000) {
+                        hrList.add(previous);
+                    }
+                    if(next.timestamp - locations[i].timestamp > 900000) {
+                        hrList.add(next);
+                    }
+                }
+            }
+        }
+        return hrList.toArray(new HeartRateReading[hrList.size()]);
     }
 
     private void drawHullFromPoints(GPSLocation[] locations, int color){
@@ -440,9 +471,7 @@ public class LocationsFragment extends Fragment {
         DBScan<GPSLocation> scan = new DBScan<GPSLocation>(eps,minPts);
         List z = Arrays.asList(locations);
         List x =  scan.cluster(z);
-        List gsr = Arrays.asList(resistances);
-        List hr = Arrays.asList(heartrates);
-        drawClusters(x, gsr, hr);
+        drawClusters(x, resistances, heartrates);
     }
 
     private void runKMeans(final GPSLocation[] locations, final GsrReading[] resistances, final HeartRateReading[] heartrates, final int k){
@@ -478,16 +507,13 @@ public class LocationsFragment extends Fragment {
                             clusters.put(index, c);
                         }
                     }
-                    final List kmeans_gsr = Arrays.asList(resistances);
-                    final List kmeans_hr = Arrays.asList(heartrates);
                     // We are only allowed to manipulate the map on the main (UI) thread:
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            drawClusters(clusters.values(), kmeans_gsr, kmeans_hr);
+                            drawClusters(clusters.values(), resistances, heartrates);
                         }
                     });
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } finally {
@@ -513,8 +539,6 @@ public class LocationsFragment extends Fragment {
                     for (int i = 0; i < indexList.length; i++){
                         indexes[i] = Integer.parseInt(indexList[i].replace("\"", "").trim());
                     }
-                    final List gsr = Arrays.asList(resistances);
-                    final List hr = Arrays.asList(heartrates);
                     for (int i = 0; i < indexes.length; i++) {
                         int index = indexes[i];
                         if(clusters.get(index) == null){
@@ -527,13 +551,11 @@ public class LocationsFragment extends Fragment {
                             clusters.put(index, c);
                         }
                     }
-                    final List meanshift_gsr = Arrays.asList(resistances);
-                    final List meanshift_hr = Arrays.asList(heartrates);
                     // We are only allowed to manipulate the map on the main (UI) thread:
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            drawClusters(clusters.values(), meanshift_gsr, meanshift_hr);
+                            drawClusters(clusters.values(), resistances, heartrates);
                         }
                     });
                 } catch (JSONException e) {

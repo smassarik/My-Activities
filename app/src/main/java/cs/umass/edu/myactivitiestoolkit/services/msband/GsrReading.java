@@ -5,6 +5,7 @@ package cs.umass.edu.myactivitiestoolkit.services.msband;
 
 public class GsrReading {
 
+    // Skin resistance of user in kOhms
     public double resistance;
     public long timestamp;
     public int id = -1;
