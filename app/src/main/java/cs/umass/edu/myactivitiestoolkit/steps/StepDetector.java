@@ -80,44 +80,27 @@ public class StepDetector implements SensorEventListener {
             long minTime = 0, maxTime = 0, curTime = event.timestamp/1000000;
             float[] filteredValues = mFilter.getFilteredValues(event.values);
             float vLength = (float)Math.sqrt((Math.pow(filteredValues[0],2) + Math.pow(filteredValues[1], 2) + Math.pow(filteredValues[2], 2))/3);
-
             if(valueCount < 15){
                 timestamps[valueCount] = curTime;
                 mbuffer[valueCount++] = vLength;
-//                Log.d(TAG, "inside IF 1");
-
             }else{
-//                Log.d(TAG, "inside else 1");
                 minAccel = mbuffer[0];
                 maxAccel = mbuffer[0];
                 for(int i = 0; i < mbuffer.length; i++){
-//                    Log.d(TAG, "for loop: " + i);
                     if(mbuffer[i] > maxAccel){
                         maxAccel = mbuffer[i];
                         maxTime = timestamps[i];
-//                        Log.d(TAG, "inside IF 2");
                     } else if(mbuffer[i] < minAccel){
                         minAccel = mbuffer[i];
                         minTime = timestamps[i];
-//                        Log.d(TAG, "inside else 2");
                     }
                 }
-
-                //determine which of the extrema occur later and calculate new slope
-                //if(minTime > maxTime) newSlope = (minAccel - maxAccel)/(minTime - maxTime);
-                //else newSlope = (maxAccel - minAccel)/(maxTime);
                 newSlope = (maxAccel- minAccel)/(maxTime-minTime);
-
-                //check for change in sign
-
                 float oldNew = Math.abs(oldSlope + newSlope);
-                //if (Math.abs(oldSlope)+Math.abs(newSlope) > oldNew){}
                 if((Math.abs(oldSlope) + Math.abs(newSlope) > oldNew)  &&  (maxAccel - minAccel) > 7){
                     onStepDetected(curTime, mbuffer);
-//                    Log.d(TAG, "inside IF 3 step");
                 }
                 oldSlope = newSlope;
-
                 mbuffer = new float[15];
                 valueCount = 0;
                 mbuffer[valueCount++] = vLength;

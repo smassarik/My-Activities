@@ -165,17 +165,17 @@ public class PPGService extends SensorService implements PPGListener
      */
 
 
-   // LinkedList queueL = new LinkedList();
-   //LinkedList queueS = new LinkedList();
-   // LinkedList queueT = new LinkedList();
-    int bpm = 0;
+    int valueCount = 0;
+    double[] timestamps = new double[50];
+    double[] mbuffer = new double[50];
     double redMax = 0.0,
            redMin = 10000.0,
            maxTime = 0.0,
            minTime = 0.0,
-           timeDiff = 0.0,
-           redDiff = 0.0;
+           newSlope,
+           curTime = 0.0;
     Filter mFilter = new Filter(3);
+    float[] filteredValues;
 
     @SuppressWarnings("deprecation")
     @Override
@@ -186,52 +186,72 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Buffer data if necessary for your algorithm
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
+        curTime = event.timestamp;
+        filteredValues = mFilter.getFilteredValues((float)event.value);
+        if(valueCount < 15){
+            timestamps[valueCount] = curTime;
+            mbuffer[valueCount++] = filteredValues[0];
+        }else{
+            redMax = mbuffer[0];
+            redMin = mbuffer[0];
+            for(int i=0;i<mbuffer.length;i++){
+                if(mbuffer[i]>redMax){
+                    redMax=mbuffer[i];
+                    maxTime=timestamps[i];
+                } else if(mbuffer[i]<redMin){
+                    redMin=mbuffer[i];
+                    minTime=timestamps[i];
+                }
+            }
+            newSlope = (redMax-redMin)/(maxTime-minTime);
 
-        float[] filteredValues = mFilter.getFilteredValues((float) event.value);
-        final long time = event.timestamp;
-        final double filtered = (double) filteredValues[0];
-        minTime = minTime==0?time:minTime;
-        maxTime = maxTime==0?time:maxTime;
-        broadcastPPGReading(time, filtered);
-        Log.d("PPGSERVICE", "\nfiltered: "+filtered);
-//        Log.d("PPGSERVICE", "minTime: "+minTime);
-//        Log.d("PPGSERVICE", "maxTime: "+maxTime);
-        Log.d("PPGSERVICE", "redMin: "+redMin);
-        Log.d("PPGSERVICE", "redMax: "+redMax);
-        Log.d("PPGSERVICE", "timeDiff: "+timeDiff);
-
-        if (filtered < redMin) {
-            redMin = filtered;
-            minTime = time;
-            Log.d("PPGSERVICE","    min found: "+redMin);
-        } else if (filtered > redMax) {
-            redMax = filtered;
-            maxTime = time;
-            Log.d("PPGSERVICE","    max found: "+redMax);
         }
 
-        timeDiff = maxTime - minTime;
-        redDiff = redMax - redMin;
-        // example: timeDiff = .3;                                      example: bpm = 40
-        // bpm = beats/60 sec                                           40 beats/60 sec; [(1/40)*40 beats / (1/40)*60 sec]
-        // 1 beat/.3 sec; [(60/.3=200)*1 beat/(60/.3=200)*.3sec]        1 beat / (60/40=1.5) sec
-        // bpm = 200beats/min                                           timeDiff = 1.5
-//        Log.d("red diff",""+(redMax-redMin));
-//        Log.d("time diff",""+timeDiff);
-        if ( timeDiff>1 && timeDiff<1500) {
-                Log.d("PPGSERVICE","        HEARTBEAT");
-                bpm = (int) (60/timeDiff);
-                redMax = 0.0;
-                redMin = 10000.0;
-                timeDiff = 0.0;
-
-            broadcastPeak(time, redMax);
-        }else if(timeDiff>1500){
-            timeDiff = 0.0;
-            redMax = 0.0;
-            redMin = 10000.0;
-        }
-        broadcastBPM(bpm);
+//
+//        final long time = event.timestamp;
+//        final double filtered = (double) filteredValues[0];
+//        minTime = minTime==0?time:minTime;
+//        maxTime = maxTime==0?time:maxTime;
+//        broadcastPPGReading(time, filtered);
+//        Log.d("PPGSERVICE", "\nfiltered: "+filtered);
+////        Log.d("PPGSERVICE", "minTime: "+minTime);
+////        Log.d("PPGSERVICE", "maxTime: "+maxTime);
+//        Log.d("PPGSERVICE", "redMin: "+redMin);
+//        Log.d("PPGSERVICE", "redMax: "+redMax);
+//        Log.d("PPGSERVICE", "timeDiff: "+timeDiff);
+//
+//        if (filtered < redMin) {
+//            redMin = filtered;
+//            minTime = time;
+//            Log.d("PPGSERVICE","    min found: "+redMin);
+//        } else if (filtered > redMax) {
+//            redMax = filtered;
+//            maxTime = time;
+//            Log.d("PPGSERVICE","    max found: "+redMax);
+//        }
+//
+//        timeDiff = maxTime - minTime;
+//        redDiff = redMax - redMin;
+//        // example: timeDiff = .3;                                      example: bpm = 40
+//        // bpm = beats/60 sec                                           40 beats/60 sec; [(1/40)*40 beats / (1/40)*60 sec]
+//        // 1 beat/.3 sec; [(60/.3=200)*1 beat/(60/.3=200)*.3sec]        1 beat / (60/40=1.5) sec
+//        // bpm = 200beats/min                                           timeDiff = 1.5
+////        Log.d("red diff",""+(redMax-redMin));
+////        Log.d("time diff",""+timeDiff);
+//        if ( timeDiff>1 && timeDiff<1500) {
+//                Log.d("PPGSERVICE","        HEARTBEAT");
+//                bpm = (int) (60/timeDiff);
+//                redMax = 0.0;
+//                redMin = 10000.0;
+//                timeDiff = 0.0;
+//
+//            broadcastPeak(time, redMax);
+//        }else if(timeDiff>1500){
+//            timeDiff = 0.0;
+//            redMax = 0.0;
+//            redMin = 10000.0;
+//        }
+//        broadcastBPM(bpm);
     }
 
 
