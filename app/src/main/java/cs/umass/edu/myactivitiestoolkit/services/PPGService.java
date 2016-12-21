@@ -165,15 +165,14 @@ public class PPGService extends SensorService implements PPGListener
      */
 
 
-    int valueCount = 0;
-    double[] timestamps = new double[50];
-    double[] mbuffer = new double[50];
+    int valueCount = 0, beats = 0, bpm;
+    double[] timestamps = new double[15];
+    double[] mbuffer = new double[15];
     double redMax = 0.0,
            redMin = 10000.0,
-           maxTime = 0.0,
-           minTime = 0.0,
-           newSlope,
-           curTime = 0.0;
+           threshold = .5,
+           time_between_beats,
+           avg_time_between_beat;
     Filter mFilter = new Filter(3);
     float[] filteredValues;
 
@@ -186,10 +185,9 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Buffer data if necessary for your algorithm
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
-        curTime = event.timestamp;
         filteredValues = mFilter.getFilteredValues((float)event.value);
         if(valueCount < 15){
-            timestamps[valueCount] = curTime;
+            timestamps[valueCount] = event.timestamp;
             mbuffer[valueCount++] = filteredValues[0];
         }else{
             redMax = mbuffer[0];
@@ -197,14 +195,20 @@ public class PPGService extends SensorService implements PPGListener
             for(int i=0;i<mbuffer.length;i++){
                 if(mbuffer[i]>redMax){
                     redMax=mbuffer[i];
-                    maxTime=timestamps[i];
                 } else if(mbuffer[i]<redMin){
                     redMin=mbuffer[i];
-                    minTime=timestamps[i];
+                }
+                if(redMax-redMin>threshold){
+                    beats++;
+                    redMax = mbuffer[i];
+                    redMin = mbuffer[i];
+                    broadcastPeak((long)timestamps[i], redMax);
                 }
             }
-            newSlope = (redMax-redMin)/(maxTime-minTime);
-
+            double time_between_beats = ((timestamps[14]-timestamps[0])/1000);
+            double avg_time_between_beat = time_between_beats/beats;
+            int bpm = (int)(60/avg_time_between_beat);
+            broadcastBPM(bpm);
         }
 
 //
