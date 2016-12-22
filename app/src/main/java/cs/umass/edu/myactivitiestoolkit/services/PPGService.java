@@ -185,6 +185,7 @@ public class PPGService extends SensorService implements PPGListener
         // TODO: Buffer data if necessary for your algorithm
         // TODO: Call your heart beat and bpm detection algorithm
         // TODO: Send your heart rate estimate to the server
+        broadcastPPGReading(event.timestamp, filteredValues[0]);
         filteredValues = mFilter.getFilteredValues((float)event.value);
         if(valueCount < 15){
             timestamps[valueCount] = event.timestamp;
@@ -205,9 +206,9 @@ public class PPGService extends SensorService implements PPGListener
                     broadcastPeak((long)timestamps[i], redMax);
                 }
             }
-            double time_between_beats = ((timestamps[14]-timestamps[0])/1000);
-            double avg_time_between_beat = time_between_beats/beats;
-            int bpm = (int)(60/avg_time_between_beat);
+            time_between_beats = ((timestamps[14]-timestamps[0])/1000);
+            avg_time_between_beat = time_between_beats/beats;
+            bpm = (int)(60/avg_time_between_beat);
             broadcastBPM(bpm);
         }
 
